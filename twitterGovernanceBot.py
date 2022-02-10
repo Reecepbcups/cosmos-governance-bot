@@ -9,13 +9,14 @@ apt install pip
 pip install requests tweepy schedule
 '''
 
+import json
 import tweepy
 import requests
 import os
 import schedule
 import time
 
-IN_PRODUCTION = False
+IN_PRODUCTION = True
 
 pingPubName = {
     # https://ping.pub/{VALUE}/gov/propID
@@ -77,13 +78,33 @@ def betterTimeFormat(ISO8061):
 
 def getAllProposals(chainSymbol):
     # Makes request to API & gets JSON reply, has to be a user-agent so nginx doesn't block connection
-    response = requests.get(chainAPIs[chainSymbol], headers={'accept': 'application/json', 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'})
-    props = response.json()['proposals']
+    
+    link = chainAPIs[chainSymbol]
+    p = {'proposal_status': '2'} # voting period
+
+    # ping.pub API requires us to get directly
+    # if chainSymbol in ['osmo', 'atom']:
+    #     p =  # voting period
+
+    try:
+        response = requests.get(chainAPIs[chainSymbol], headers={
+            'accept': 'application/json', 
+            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'}, 
+            params=p)
+        # print(response.url)
+        props = response.json()['proposals']
+    except Exception as e:
+        print(f"Issue with request to {chainSymbol}: {e}")
+        props = []
     return props
 
 def getNewestProposalID(proposalsJSON) -> int:
     # Returns last proposal id int
-    return int(proposalsJSON[-1]['proposal_id'])
+    try:
+        lastID = int(proposalsJSON[-1]['proposal_id'])
+    except:
+        lastID = -2
+    return lastID
 
 def getLatestProposalIDChecked(chainSymbol, fileName) -> int:
     # returns the last proposal ID we checked, or 0 if none tweeted yet
@@ -94,8 +115,8 @@ def getLatestProposalIDChecked(chainSymbol, fileName) -> int:
         with open(fileName, "r") as f:
             # update to last checked proposal ID
             lastPropID = int(f.read())
-            # Only print out if proposal > 0
-            print(f"{chainSymbol} last voting prop id: {lastPropID}")
+            
+    print(f"{chainSymbol} last voting prop id: {lastPropID}")
 
     return lastPropID
 
@@ -108,8 +129,14 @@ def checkIfNewestProposalIDIsGreaterThanLastTweet(chainSymbol):
     # gets JSON list of all proposals
     props = getAllProposals(chainSymbol)
 
+    newestPropID = getNewestProposalID(props)
+
+    if newestPropID == -1:
+        # means there are no pending voting
+        return
+
     # loop through out last stored voted prop ID & newest proposal ID
-    for prop in props[lastPropID:getNewestProposalID(props)]:
+    for prop in props[lastPropID:newestPropID]:
         
         # only show gov proposals you can vote on
         if prop['status'] != "PROPOSAL_STATUS_VOTING_PERIOD":
@@ -137,7 +164,10 @@ def checkIfNewestProposalIDIsGreaterThanLastTweet(chainSymbol):
 
 def runChecks():
     for chain in chainAPIs.keys():
+        # try:
         checkIfNewestProposalIDIsGreaterThanLastTweet(chain)
+        # except Exception as e:
+        #     print(f"{chain} checkProp failed: {e}")
 
 
 SCHEDULE_SECONDS = 1 # 1 second for testing
@@ -145,13 +175,14 @@ output = "Bot is in test mode..."
 
 
 if IN_PRODUCTION:  
-    SCHEDULE_SECONDS = 5*60 # 5 minutes for prod.
+    SCHEDULE_SECONDS = 10*60 # 5 minutes for prod.
     output = "[!] BOT IS RUNNING IN PRODUCTION MODE!!!!!!!!!!!!!!!!!!"
+    print(output)
     time.sleep(5) # Extra wait to ensure we want to run
     runChecks() # Runs 1st time to update, then does runnable
 
-print(output)
 
+print(output)
 schedule.every(SCHEDULE_SECONDS).seconds.do(runChecks)    
 while True:
     schedule.run_pending()
