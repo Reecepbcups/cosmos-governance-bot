@@ -6,7 +6,7 @@ February 9th, 2022
 - Twitter bot to monitor and report on COSMOS governance proposals
 
 apt install pip
-pip install request tweepy schedule
+pip install requests tweepy schedule
 '''
 
 import tweepy
@@ -15,17 +15,20 @@ import os
 import schedule
 import time
 
-
 IN_PRODUCTION = False
 
 pingPubName = {
+    # https://ping.pub/{VALUE}/gov/propID
     'dig': 'dig',
     'juno': 'juno',
     'huahua': 'chihuahua',
     'osmo': 'osmosis',
     'atom': 'cosmos',
     'akash': "akash-network",
-    'ust': 'terra-luna',
+    'star': 'stargaze',
+    'kava': 'kava',
+    'like': 'likecoin',
+    'persistence': 'persistence',
 }
 
 chainAPIs = {
@@ -35,31 +38,27 @@ chainAPIs = {
     'osmo': 'https://osmo.api.ping.pub/cosmos/gov/v1beta1/proposals',
     'atom': 'https://cosmos.api.ping.pub/cosmos/gov/v1beta1/proposals',
     'akash': 'https://akash.api.ping.pub/cosmos/gov/v1beta1/proposals',
-    'ust': 'https://fcd.terra.dev/cosmos/gov/v1beta1/proposals',
+    'star': "https://rest.stargaze-apis.com/cosmos/gov/v1beta1/proposals",
+    'kava': 'https://api.data.kava.io/cosmos/gov/v1beta1/proposals',
+    'like': 'https://mainnet-node.like.co/cosmos/gov/v1beta1/proposals',
+    'persistence': 'https://rest.core.persistence.one/cosmos/gov/v1beta1/proposals',
 }
 
 
-def getSecrets():
-    with open("secrets.prop", "r") as f:
-        secrets = f.read().splitlines()
-        f.close()
-    return secrets
+with open("secrets.prop", "r") as f:
+    secrets = f.read().splitlines()
+    APIKEY = secrets[0]
+    APIKEYSECRET = secrets[1]
+    ACCESS_TOKEN = secrets[2]
+    ACCESS_TOKEN_SECRET = secrets[3]
 
-secrets = getSecrets()
-APIKEY = secrets[0]
-APIKEYSECRET = secrets[1]
-ACCESS_TOKEN = secrets[2]
-ACCESS_TOKEN_SECRET = secrets[3]
+# Authenticate to Twitter & Get API
+auth = tweepy.OAuth1UserHandler(APIKEY, APIKEYSECRET)
+auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+api = tweepy.API(auth, wait_on_rate_limit=True)
 
 
 def tweet(chainSymbol, propID, title, voteEndTime=""):
-    # Authenticate to Twitter
-    auth = tweepy.OAuth1UserHandler(APIKEY, APIKEYSECRET)
-    auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
-
-    api = tweepy.API(auth, wait_on_rate_limit=True)
-
-    # message = f"{title}. Vote by {votePeriodEnd} - https://ping.pub/{chainSymbol}/gov/{propID}"
     message = f"${str(chainSymbol).upper()} | Proposal #{propID} | VOTING_PERIOD | {title} | https://ping.pub/{pingPubName[chainSymbol]}/gov/{propID}"
     print(message)
 
@@ -67,54 +66,67 @@ def tweet(chainSymbol, propID, title, voteEndTime=""):
         try:
             tweet = api.update_status(message)
             print(f"Tweet sent for {tweet.id}: {message}")
-            # api.update_status(in_reply_to_status_id=tweet.id, status=f"Voting Ends: ")
+            # api.update_status(in_reply_to_status_id=tweet.id, status=f"Voting Ends: {voteEndTime}")
         except:
             print("Tweet failed due to being duplicate")
         
 
-
 def betterTimeFormat(ISO8061):
+    # Improve in future to be Jan-01-2022
     return ISO8061.replace("T", " ").split(".")[0]
 
 def getAllProposals(chainSymbol):
+    # Makes request to API & gets JSON reply, has to be a user-agent so nginx doesn't block connection
     response = requests.get(chainAPIs[chainSymbol], headers={'accept': 'application/json', 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'})
     props = response.json()['proposals']
     return props
 
 def getNewestProposalID(proposalsJSON) -> int:
+    # Returns last proposal id int
     return int(proposalsJSON[-1]['proposal_id'])
 
+def getLatestProposalIDChecked(chainSymbol, fileName) -> int:
+    # returns the last proposal ID we checked, or 0 if none tweeted yet
+    lastPropID = 0
+
+    # open text file (means we have already tweeted about this chain)
+    if os.path.exists(fileName):
+        with open(fileName, "r") as f:
+            # update to last checked proposal ID
+            lastPropID = int(f.read())
+            # Only print out if proposal > 0
+            print(f"{chainSymbol} last voting prop id: {lastPropID}")
+
+    return lastPropID
 
 def checkIfNewestProposalIDIsGreaterThanLastTweet(chainSymbol):
-    # and that it is currently in voting period
+    fileName = f"{chainSymbol}.txt"
 
+    # get our last tweeted proposal ID (that was in voting period)
+    lastPropID = getLatestProposalIDChecked(chainSymbol, fileName)
 
-    # check if file exist
-    if not os.path.exists(f"{chainSymbol}.txt"):
-        with open(f"{chainSymbol}.txt", "w") as f:
-            f.write("0")
-            f.close()
-
-    # open text file
-    with open(f"{chainSymbol}.txt", "r") as f:
-        lastPropID = int(f.read())
-        print(f"{chainSymbol} Last prop ID tweeted: {lastPropID}")
-
+    # gets JSON list of all proposals
     props = getAllProposals(chainSymbol)
 
-    # get newest proposal ID, may not be in voting period FYI.
-
+    # loop through out last stored voted prop ID & newest proposal ID
     for prop in props[lastPropID:getNewestProposalID(props)]:
-        # if it is "PROPOSAL_STATUS_VOTING_PERIOD" and is greater than last prop ID
+        
+        # only show gov proposals you can vote on
+        if prop['status'] != "PROPOSAL_STATUS_VOTING_PERIOD":
+            continue
+
         current_prop_id = int(prop['proposal_id'])
-        if prop['status'] == "PROPOSAL_STATUS_VOTING_PERIOD" and current_prop_id > lastPropID:            
+
+        # If this is a new proposal which is not the last one we tweeted for
+        if current_prop_id > lastPropID:   
+
             print(f"Newest prop ID {current_prop_id} is greater than last prop ID {lastPropID}")
 
-            # save newest prop ID to file
-            with open(f"{chainSymbol}.txt", "w") as f:
+            # save newest prop ID to file so we don't double tweet it
+            with open(fileName, "w") as f:
                 f.write(str(current_prop_id))
-                f.close()
                 
+            # Tweet that bitch
             tweet(
                 chainSymbol=chainSymbol,
                 propID=prop['proposal_id'], 
@@ -125,62 +137,22 @@ def checkIfNewestProposalIDIsGreaterThanLastTweet(chainSymbol):
 
 def runChecks():
     for chain in chainAPIs.keys():
-        # _id = getNewestProposalID(chain)
-        # print(f"{chain}: {_id}")
         checkIfNewestProposalIDIsGreaterThanLastTweet(chain)
 
-if IN_PRODUCTION:
-    print("CosmosGovProps Bot now running in production.")
-else:
-    print("CosmosGovProps Bot now running in testing mode.")
 
-if IN_PRODUCTION:    
-    runChecks()
-    schedule.every(5).minutes.do(runChecks)
-    while True:
-        schedule.run_pending()
-        time.sleep(60)
-else:
-    schedule.every(1).seconds.do(runChecks)
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+SCHEDULE_SECONDS = 1 # 1 second for testing
+output = "Bot is in test mode..."
 
 
-# Old code:
-    # tweet(
-    #     title=f"${chainSymbol} | Proposal #{prop['proposal_id']} | {prop['content']['title']}", 
-    #     desc=prop['content']['description'],
-    #     votePeriodEnd=betterTimeFormat(prop['voting_end_time'])
-    # )
+if IN_PRODUCTION:  
+    SCHEDULE_SECONDS = 5*60 # 5 minutes for prod.
+    output = "[!] BOT IS RUNNING IN PRODUCTION MODE!!!!!!!!!!!!!!!!!!"
+    time.sleep(5) # Extra wait to ensure we want to run
+    runChecks() # Runs 1st time to update, then does runnable
 
-    # print out details of proposal
-    # for i in range(0, len(desc), 280):
-    #     tweet =  api.update_status(in_reply_to_status_id=tweet.id, status=desc[i:i+280])
-    # print(desc[i:i+140])
+print(output)
 
-    # api.update_status(in_reply_to_status_id=tweet.id, status=f"https://ping.pub/{chainSymbol}/gov/{propID}")
-
-
-    ## get json keys
-    # for key in props:
-    #     for k in key:
-    #         print(f"{k}", end=", ")
-
-
-# def getProposals(chainSymbol, id):
-#     # Get all proposals (past and future) from chain 
-#     # response = requests.get(chainAPIs[chainSymbol], headers={'accept': 'application/json',})
-#     # props = response.json()['proposals']
-#     # print(props)
-#     # for prop in props:
-#     #     # if prop['proposal_id'] in ["1", "2", "3", '4']:
-#     #     #     continue
-#         # tweet(
-#         #     chainSymbol=chainSymbol,
-#         #     propID=prop['proposal_id'], 
-#         #     title=f"${str(chainSymbol).upper()} | Proposal #{prop['proposal_id']} | {prop['content']['title']}", 
-#         #     votePeriodEnd=betterTimeFormat(prop['voting_end_time'])
-#         # )
-#     #     break
-#     pass
+schedule.every(SCHEDULE_SECONDS).seconds.do(runChecks)    
+while True:
+    schedule.run_pending()
+    time.sleep(SCHEDULE_SECONDS)
