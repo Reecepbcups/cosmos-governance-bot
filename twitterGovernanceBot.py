@@ -82,10 +82,6 @@ def getAllProposals(chainSymbol):
     link = chainAPIs[chainSymbol]
     p = {'proposal_status': '2'} # voting period
 
-    # ping.pub API requires us to get directly
-    # if chainSymbol in ['osmo', 'atom']:
-    #     p =  # voting period
-
     try:
         response = requests.get(chainAPIs[chainSymbol], headers={
             'accept': 'application/json', 
@@ -93,6 +89,7 @@ def getAllProposals(chainSymbol):
             params=p)
         # print(response.url)
         props = response.json()['proposals']
+        # print("Props type: ", str(type(props)))
     except Exception as e:
         print(f"Issue with request to {chainSymbol}: {e}")
         props = []
@@ -100,11 +97,18 @@ def getAllProposals(chainSymbol):
 
 def getNewestProposalID(proposalsJSON) -> int:
     # Returns last proposal id int
-    try:
-        lastID = int(proposalsJSON[-1]['proposal_id'])
-    except:
-        lastID = -2
-    return lastID
+
+    # -2 if list of proposals from API is empty
+    newestID = -2
+
+    # lastID = int(proposalsJSON[-1]['proposal_id']) # old
+    for prop in proposalsJSON: # dicts are unordered
+        # print("PROP: " + str(prop['proposal_id']))
+        chekID = int(prop['proposal_id'])
+        if chekID > newestID:
+            newestID = chekID
+
+    return newestID
 
 def getLatestProposalIDChecked(chainSymbol, fileName) -> int:
     # returns the last proposal ID we checked, or 0 if none tweeted yet
@@ -128,35 +132,38 @@ def checkIfNewestProposalIDIsGreaterThanLastTweet(chainSymbol):
 
     # gets JSON list of all proposals
     props = getAllProposals(chainSymbol)
+    # print("THE PROPS " + str(len(props)), props)
 
     newestPropID = getNewestProposalID(props)
+    # print("Checking newest proposal " + str(newestPropID))
 
-    if newestPropID == -1:
-        # means there are no pending voting
+    if newestPropID == -2:
+        # means there are no pending votes rn
         return
 
     # loop through out last stored voted prop ID & newest proposal ID
-    for prop in props[lastPropID:newestPropID]:
-        
-        # only show gov proposals you can vote on
+    for prop in props:
+        current_prop_id = int(prop['proposal_id'])
+
+        # This should always be true, just double checking
         if prop['status'] != "PROPOSAL_STATUS_VOTING_PERIOD":
             continue
 
-        current_prop_id = int(prop['proposal_id'])
-
         # If this is a new proposal which is not the last one we tweeted for
         if current_prop_id > lastPropID:   
-
             print(f"Newest prop ID {current_prop_id} is greater than last prop ID {lastPropID}")
 
             # save newest prop ID to file so we don't double tweet it
-            with open(fileName, "w") as f:
-                f.write(str(current_prop_id))
-                
+            if IN_PRODUCTION:
+                with open(fileName, "w") as f:
+                    f.write(str(current_prop_id))
+            else:
+                print("Not in production, not writing to file.")
+                    
             # Tweet that bitch
             tweet(
                 chainSymbol=chainSymbol,
-                propID=prop['proposal_id'], 
+                propID=current_prop_id, 
                 title=prop['content']['title'], 
                 # votePeriodEnd=betterTimeFormat(prop['voting_end_time'])
             )
@@ -164,10 +171,10 @@ def checkIfNewestProposalIDIsGreaterThanLastTweet(chainSymbol):
 
 def runChecks():
     for chain in chainAPIs.keys():
-        # try:
-        checkIfNewestProposalIDIsGreaterThanLastTweet(chain)
-        # except Exception as e:
-        #     print(f"{chain} checkProp failed: {e}")
+        try:
+            checkIfNewestProposalIDIsGreaterThanLastTweet(chain)
+        except Exception as e:
+            print(f"{chain} checkProp failed: {e}")
 
 
 SCHEDULE_SECONDS = 1 # 1 second for testing
