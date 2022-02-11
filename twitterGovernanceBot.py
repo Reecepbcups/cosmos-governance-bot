@@ -24,11 +24,11 @@ pingPubName = {
     'huahua': 'chihuahua',
     'osmo': 'osmosis',
     'atom': 'cosmos',
-    'akash': "akash-network",
+    'akt': "akash-network",
     'star': 'stargaze',
     'kava': 'kava',
     'like': 'likecoin',
-    'persistence': 'persistence',
+    'xprt': 'persistence',
 }
 
 chainAPIs = {
