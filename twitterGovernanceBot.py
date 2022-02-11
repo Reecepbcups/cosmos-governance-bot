@@ -18,7 +18,8 @@ import time
 IN_PRODUCTION = True
 
 pingPubName = {
-    # https://ping.pub/{VALUE}/gov/propID
+    # https://ping.pub/{VALUE}/gov/propID.
+    # Keys must be same name as chainAPIs, value is ping.pub link location.
     'dig': 'dig',
     'juno': 'juno',
     'huahua': 'chihuahua',
@@ -37,11 +38,11 @@ chainAPIs = {
     'huahua': 'https://api.chihuahua.wtf/cosmos/gov/v1beta1/proposals',
     'osmo': 'https://osmo.api.ping.pub/cosmos/gov/v1beta1/proposals',
     'atom': 'https://cosmos.api.ping.pub/cosmos/gov/v1beta1/proposals',
-    'akash': 'https://akash.api.ping.pub/cosmos/gov/v1beta1/proposals',
+    'akt': 'https://akash.api.ping.pub/cosmos/gov/v1beta1/proposals',
     'star': "https://rest.stargaze-apis.com/cosmos/gov/v1beta1/proposals",
     'kava': 'https://api.data.kava.io/cosmos/gov/v1beta1/proposals',
     'like': 'https://mainnet-node.like.co/cosmos/gov/v1beta1/proposals',
-    'persistence': 'https://rest.core.persistence.one/cosmos/gov/v1beta1/proposals',
+    'xprt': 'https://rest.core.persistence.one/cosmos/gov/v1beta1/proposals',
 }
 
 
@@ -51,6 +52,7 @@ with open("secrets.prop", "r") as f:
     APIKEYSECRET = secrets[1]
     ACCESS_TOKEN = secrets[2]
     ACCESS_TOKEN_SECRET = secrets[3]
+    f.close()
 
 # Authenticate to Twitter & Get API
 auth = tweepy.OAuth1UserHandler(APIKEY, APIKEYSECRET)
@@ -99,6 +101,7 @@ def getLatestProposalIDChecked(chainSymbol, fileName) -> int:
         with open(fileName, "r") as f:
             # update to last checked proposal ID
             lastPropID = int(f.read())
+            f.close()
             
     print(f"{chainSymbol} last voting prop id: {lastPropID}")
 
@@ -128,6 +131,7 @@ def checkIfNewestProposalIDIsGreaterThanLastTweet(chainSymbol):
             if IN_PRODUCTION:
                 with open(fileName, "w") as f:
                     f.write(str(current_prop_id))
+                    f.close()
             else:
                 print("Not in production, not writing to file.")
                     
@@ -146,6 +150,8 @@ def runChecks():
             checkIfNewestProposalIDIsGreaterThanLastTweet(chain)
         except Exception as e:
             print(f"{chain} checkProp failed: {e}")
+            
+    print("All chains checked, waiting")
 
 
 SCHEDULE_SECONDS = 1 # 1 second for testing
