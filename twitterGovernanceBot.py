@@ -15,34 +15,50 @@ import os
 import schedule
 import time
 
-IN_PRODUCTION = True
-
-pingPubName = {
-    # https://ping.pub/{VALUE}/gov/propID.
-    # Keys must be same name as chainAPIs, value is ping.pub link location.
-    'dig': 'dig',
-    'juno': 'juno',
-    'huahua': 'chihuahua',
-    'osmo': 'osmosis',
-    'atom': 'cosmos',
-    'akt': "akash-network",
-    'star': 'stargaze',
-    'kava': 'kava',
-    'like': 'likecoin',
-    'xprt': 'persistence',
-}
+IN_PRODUCTION = False
 
 chainAPIs = {
-    "dig": 'https://api-1-dig.notional.ventures/cosmos/gov/v1beta1/proposals',
-    'juno': 'https://lcd-juno.itastakers.com/cosmos/gov/v1beta1/proposals',
-    'huahua': 'https://api.chihuahua.wtf/cosmos/gov/v1beta1/proposals',
-    'osmo': 'https://osmo.api.ping.pub/cosmos/gov/v1beta1/proposals',
-    'atom': 'https://cosmos.api.ping.pub/cosmos/gov/v1beta1/proposals',
-    'akt': 'https://akash.api.ping.pub/cosmos/gov/v1beta1/proposals',
-    'star': "https://rest.stargaze-apis.com/cosmos/gov/v1beta1/proposals",
-    'kava': 'https://api.data.kava.io/cosmos/gov/v1beta1/proposals',
-    'like': 'https://mainnet-node.like.co/cosmos/gov/v1beta1/proposals',
-    'xprt': 'https://rest.core.persistence.one/cosmos/gov/v1beta1/proposals',
+    "dig": 
+        [ 
+        'https://api-1-dig.notional.ventures/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/dig/gov'
+        ],
+    'juno': [
+        'https://lcd-juno.itastakers.com/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/juno/gov'
+        ],
+    'huahua': [
+        'https://api.chihuahua.wtf/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/chihuahua/gov'
+        ],
+    'osmo': [
+        'https://osmo.api.ping.pub/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/osmosis/gov'
+        ],
+    'atom': [
+        'https://cosmos.api.ping.pub/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/cosmos/gov'
+        ],
+    'akt': [
+        'https://akash.api.ping.pub/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/akash-network/gov'
+        ],
+    'star': [
+        "https://rest.stargaze-apis.com/cosmos/gov/v1beta1/proposals",
+        'https://ping.pub/stargaze/gov'
+        ],
+    'kava': [
+        'https://api.data.kava.io/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/kava/gov'
+        ],
+    'like': [
+        'https://mainnet-node.like.co/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/likecoin/gov'
+        ],
+    'xprt': [
+        'https://rest.core.persistence.one/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/persistence/gov'
+        ],
 }
 
 
@@ -60,8 +76,8 @@ auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth, wait_on_rate_limit=True)
 
 
-def tweet(chainSymbol, propID, title, voteEndTime=""):
-    message = f"${str(chainSymbol).upper()} | Proposal #{propID} | VOTING_PERIOD | {title} | https://ping.pub/{pingPubName[chainSymbol]}/gov/{propID}"
+def tweet(ticker, propID, title, voteEndTime=""):
+    message = f"${str(ticker).upper()} | Proposal #{propID} | VOTING_PERIOD | {title} | {chainAPIs[ticker][1]}/{propID}"
     print(message)
 
     if IN_PRODUCTION:
@@ -73,26 +89,27 @@ def tweet(chainSymbol, propID, title, voteEndTime=""):
             print("Tweet failed due to being duplicate")
         
 
-def betterTimeFormat(ISO8061):
+def betterTimeFormat(ISO8061) -> str:
     # Improve in future to be Jan-01-2022
     return ISO8061.replace("T", " ").split(".")[0]
 
-def getAllProposals(chainSymbol):
-    # Makes request to API & gets JSON reply, has to be a user-agent so nginx doesn't block connection
+def getAllProposals(ticker) -> list:
+    # Makes request to API & gets JSON reply in form of a list
+    props = []
+    
     try:
-        response = requests.get(chainAPIs[chainSymbol], headers={
+        link = chainAPIs[ticker][0]
+        response = requests.get(link, headers={
             'accept': 'application/json', 
             'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'}, 
             params={'proposal_status': '2'})
         # print(response.url)
         props = response.json()['proposals']
-        # print("Props type: ", str(type(props)))
     except Exception as e:
-        print(f"Issue with request to {chainSymbol}: {e}")
-        props = []
+        print(f"Issue with request to {ticker}: {e}")
     return props
 
-def getLatestProposalIDChecked(chainSymbol, fileName) -> int:
+def getLatestProposalIDChecked(ticker, fileName) -> int:
     # returns the last proposal ID we checked, or 0 if none tweeted yet
     lastPropID = 0
 
@@ -103,18 +120,18 @@ def getLatestProposalIDChecked(chainSymbol, fileName) -> int:
             lastPropID = int(f.read())
             f.close()
             
-    print(f"{chainSymbol} last voting prop id: {lastPropID}")
+    print(f"{ticker} last voting prop id: {lastPropID}")
 
     return lastPropID
 
-def checkIfNewestProposalIDIsGreaterThanLastTweet(chainSymbol):
-    fileName = f"{chainSymbol}.txt"
+def checkIfNewestProposalIDIsGreaterThanLastTweet(ticker):
+    fileName = f"{ticker}.txt"
 
     # get our last tweeted proposal ID (that was in voting period), found in file
-    lastPropID = getLatestProposalIDChecked(chainSymbol, fileName)
+    lastPropID = getLatestProposalIDChecked(ticker, fileName)
 
     # gets JSON list of all proposals
-    props = getAllProposals(chainSymbol)
+    props = getAllProposals(ticker)
 
     if len(props) == 0:
         return
@@ -137,7 +154,7 @@ def checkIfNewestProposalIDIsGreaterThanLastTweet(chainSymbol):
                     
             # Tweet that bitch
             tweet(
-                chainSymbol=chainSymbol,
+                ticker=ticker,
                 propID=current_prop_id, 
                 title=prop['content']['title'], 
                 # votePeriodEnd=betterTimeFormat(prop['voting_end_time'])
