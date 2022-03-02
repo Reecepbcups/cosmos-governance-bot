@@ -15,7 +15,7 @@ import os
 import schedule
 import time
 
-IN_PRODUCTION = False
+IN_PRODUCTION = True
 
 chainAPIs = {
     "dig": 
@@ -43,7 +43,7 @@ chainAPIs = {
         'https://akash.api.ping.pub/cosmos/gov/v1beta1/proposals',
         'https://ping.pub/akash-network/gov'
         ],
-    'star': [
+    'stars': [
         "https://rest.stargaze-apis.com/cosmos/gov/v1beta1/proposals",
         'https://ping.pub/stargaze/gov'
         ],
@@ -58,6 +58,10 @@ chainAPIs = {
     'xprt': [
         'https://rest.core.persistence.one/cosmos/gov/v1beta1/proposals',
         'https://ping.pub/persistence/gov'
+        ],
+    'cmdx': [
+        'https://rest.comdex.one/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/comdex/gov'
         ],
 }
 
@@ -101,7 +105,7 @@ def getAllProposals(ticker) -> list:
         link = chainAPIs[ticker][0]
         response = requests.get(link, headers={
             'accept': 'application/json', 
-            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'}, 
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'}, 
             params={'proposal_status': '2'})
         # print(response.url)
         props = response.json()['proposals']
@@ -175,7 +179,7 @@ SCHEDULE_SECONDS = 1 # 1 second for testing
 output = "Bot is in test mode..."
 
 if IN_PRODUCTION:  
-    SCHEDULE_SECONDS = 15*60 # 5 minutes for prod.
+    SCHEDULE_SECONDS = 20*60
     output = "[!] BOT IS RUNNING IN PRODUCTION MODE!!!!!!!!!!!!!!!!!!"
     print(output)
     time.sleep(5) # Extra wait to ensure we want to run
