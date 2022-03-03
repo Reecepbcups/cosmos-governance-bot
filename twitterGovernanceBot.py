@@ -7,6 +7,8 @@ February 9th, 2022
 
 apt install pip
 pip install requests tweepy schedule
+
+*Get REST lcd's in chain.json from https://github.com/cosmos/chain-registry
 '''
 
 import tweepy
@@ -32,11 +34,11 @@ chainAPIs = {
         'https://ping.pub/chihuahua/gov'
         ],
     'osmo': [
-        'https://osmo.api.ping.pub/cosmos/gov/v1beta1/proposals',
+        'https://lcd-osmosis.blockapsis.com/cosmos/gov/v1beta1/proposals',
         'https://ping.pub/osmosis/gov'
         ],
     'atom': [
-        'https://cosmos.api.ping.pub/cosmos/gov/v1beta1/proposals',
+        'https://lcd-cosmoshub.blockapsis.com/cosmos/gov/v1beta1/proposals',
         'https://ping.pub/cosmos/gov'
         ],
     'akt': [
