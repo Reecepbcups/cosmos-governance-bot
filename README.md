@@ -2,7 +2,7 @@
 A twitter bot to notify users of governance proposals when in voting period
 Run by the PBCUPS validator ($DIG network)
 
-https://twitter.com/cosmosgovnotifs?s=21
+https://twitter.com/CosmosGovNotifs
 
 # Current Notifications for:
 ## Major
