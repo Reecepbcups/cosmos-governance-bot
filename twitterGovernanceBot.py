@@ -117,6 +117,10 @@ chainAPIs = {
         'https://api.secretapi.io/cosmos/gov/v1beta1/proposals',
         'https://www.mintscan.io/secret/proposals'
         ],
+    "sent": [  
+        'https://lcd-sentinel.keplr.app/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/sentinel/gov'
+        ],
     "sif": [  
         'https://api.sifchain.finance:443/cosmos/gov/v1beta1/proposals',
         'https://ping.pub/sifchain/gov'
