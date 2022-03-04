@@ -22,120 +22,144 @@ IN_PRODUCTION = True
 chainAPIs = {
     "dig": [ 
         'https://api-1-dig.notional.ventures/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/dig/gov'
+        'https://ping.pub/dig/gov',
+        "@dig_chain"
         ],
     'juno': [
         'https://lcd-juno.itastakers.com/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/juno/gov'
+        'https://ping.pub/juno/gov',
+        ""
         ],
     'huahua': [
         'https://api.chihuahua.wtf/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/chihuahua/gov'
+        'https://ping.pub/chihuahua/gov',
+        "@ChihuahuaChain"
         ],
     'osmo': [
         'https://lcd-osmosis.blockapsis.com/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/osmosis/gov'
+        'https://ping.pub/osmosis/gov',
+        '@osmosiszone'
         ],
     'atom': [
         'https://lcd-cosmoshub.blockapsis.com/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/cosmos/gov'
+        'https://ping.pub/cosmos/gov',
+        "@cosmos"
         ],
     'akt': [
         'https://akash.api.ping.pub/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/akash-network/gov'
+        'https://ping.pub/akash-network/gov',
+        '@akashnet_'
         ],
     'stars': [
         "https://rest.stargaze-apis.com/cosmos/gov/v1beta1/proposals",
-        'https://ping.pub/stargaze/gov'
+        'https://ping.pub/stargaze/gov',
+        '@StargazeZone'
         ],
     'kava': [
         'https://api.data.kava.io/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/kava/gov'
+        'https://ping.pub/kava/gov',
+        '@kava_platform'
         ],
     'like': [
         'https://mainnet-node.like.co/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/likecoin/gov'
+        'https://ping.pub/likecoin/gov',
+        '@likecoin'
         ],
     'xprt': [
         'https://rest.core.persistence.one/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/persistence/gov'
+        'https://ping.pub/persistence/gov',
+        '@PersistenceOne'
         ],
     'cmdx': [
         'https://rest.comdex.one/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/comdex/gov'
+        'https://ping.pub/comdex/gov',
+        '@ComdexOfficial'
         ],
     # New Adds:
     "bcna": [ 
         'https://lcd.bitcanna.io/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/bitcanna/gov'
+        'https://ping.pub/bitcanna/gov',
+        '@BitCannaGlobal'
         ],
     "bitsong": [ 
         'https://lcd-bitsong.itastakers.com/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/bitsong/gov'
+        'https://ping.pub/bitsong/gov',
+        '@BitSongOfficial'
         ],
     "bostrom": [ 
         'https://lcd.bostrom.cybernode.ai/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/bostrom/gov'
+        'https://ping.pub/bostrom/gov',
+        ''
         ],
     "cheqd": [ 
         'https://api.cheqd.net/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/cheqd/gov'
+        'https://ping.pub/cheqd/gov',
+        '@cheqd_io'
         ],
     "cro": [  
         'https://mainnet.crypto.org:1317/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/crypto-com-chain/gov'
+        'https://ping.pub/crypto-com-chain/gov',
+        '@cryptocom'
         ],
     "evmos": [  
         'https://rest.bd.evmos.org:1317/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/evmos/gov'
+        'https://ping.pub/evmos/gov',
+        '@EvmosOrg'
         ],
     "gravity": [  
         'https://gravitychain.io:1317/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/gravity-bridge/gov'
+        'https://ping.pub/gravity-bridge/gov',
+        '@gravity_bridge'
         ],
     "inj": [  
         'https://public.lcd.injective.network/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/injective/gov'
+        'https://ping.pub/injective/gov',
+        '@InjectiveLabs'
         ],
     "iris": [  
         'https://lcd-iris.keplr.app/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/iris-network/gov'
+        'https://ping.pub/iris-network/gov',
+        '@irisnetwork'
         ],
     "lum": [  
         'https://node0.mainnet.lum.network/rest/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/LUM%20Network/gov'
+        'https://ping.pub/LUM%20Network/gov',
+        '@lum_network'
         ],
     "regen": [  
         'https://regen.stakesystems.io/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/regen/gov'
+        'https://ping.pub/regen/gov',
+        '@regen_network'
         ],
     "pb": [  
         'https://api.provenance.io/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/provenance/gov'
+        'https://ping.pub/provenance/gov',
+        ''
         ],
     "secret": [  
         'https://api.secretapi.io/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/secret/proposals'
+        'https://www.mintscan.io/secret/proposals',
+        '@SecretNetwork'
         ],
     "sent": [  
         'https://lcd-sentinel.keplr.app/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/sentinel/gov'
+        'https://ping.pub/sentinel/gov',
+        '@Sentinel_co'
         ],
     "sif": [  
         'https://api.sifchain.finance:443/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/sifchain/gov'
+        'https://ping.pub/sifchain/gov',
+        "@sifchain"
         ],
-    # "somm": [  
-    #     'https://lcd-sommelier.keplr.app/cosmos/gov/v1beta1/proposals',
-    #     'https://sommscan.io/governance'
-    #     ],
     "terra": [  
         'https://blockdaemon-terra-lcd.api.bdnodes.net:1317/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/terra-luna/gov'
+        'https://ping.pub/terra-luna/gov',
+        "@terra_money"
         ],
     "umee": [  
         'https://api.blue.main.network.umee.cc/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/umee/gov'
+        'https://ping.pub/umee/gov',
+        "@Umee_CrossChain"
         ],
 }
 
@@ -156,6 +180,12 @@ api = tweepy.API(auth, wait_on_rate_limit=True)
 
 def tweet(ticker, propID, title, voteEndTime=""):
     message = f"${str(ticker).upper()} | Proposal #{propID} | VOTING_PERIOD | {title} | {chainAPIs[ticker][1]}/{propID}"
+    
+    twitterAt = chainAPIs[ticker][2] # @'s blockchains official twitter
+    if twitterAt is not None and len(twitterAt) > 1:
+        twitterAt = f'@{twitterAt}' if not twitterAt.startswith('@') else twitterAt
+        message += f" | {twitterAt}"
+
     print(message)
 
     if IN_PRODUCTION:
@@ -249,7 +279,7 @@ def runChecks():
     print("All chains checked, waiting")
 
 
-SCHEDULE_SECONDS = 1 # 1 second for testing
+SCHEDULE_SECONDS = 3
 output = "Bot is in test mode..."
 
 if IN_PRODUCTION:  
