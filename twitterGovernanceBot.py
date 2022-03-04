@@ -20,8 +20,7 @@ import time
 IN_PRODUCTION = True
 
 chainAPIs = {
-    "dig": 
-        [ 
+    "dig": [ 
         'https://api-1-dig.notional.ventures/cosmos/gov/v1beta1/proposals',
         'https://ping.pub/dig/gov'
         ],
@@ -65,7 +64,6 @@ chainAPIs = {
         'https://rest.comdex.one/cosmos/gov/v1beta1/proposals',
         'https://ping.pub/comdex/gov'
         ],
-
     # New Adds:
     "bcna": [ 
         'https://lcd.bitcanna.io/cosmos/gov/v1beta1/proposals',
@@ -108,7 +106,7 @@ chainAPIs = {
         'https://ping.pub/LUM%20Network/gov'
         ],
     "regen": [  
-        'https://regen.stakesystems.io/rest/cosmos/gov/v1beta1/proposals',
+        'https://regen.stakesystems.io/cosmos/gov/v1beta1/proposals',
         'https://ping.pub/regen/gov'
         ],
     "pb": [  
@@ -120,7 +118,7 @@ chainAPIs = {
         'https://www.mintscan.io/secret/proposals'
         ],
     "sif": [  
-        'https://api.sifchain.finance:443/rest/cosmos/gov/v1beta1/proposals',
+        'https://api.sifchain.finance:443/cosmos/gov/v1beta1/proposals',
         'https://ping.pub/sifchain/gov'
         ],
     # "somm": [  
@@ -128,7 +126,7 @@ chainAPIs = {
     #     'https://sommscan.io/governance'
     #     ],
     "terra": [  
-        'https://blockdaemon-terra-lcd.api.bdnodes.net:1317/rest/cosmos/gov/v1beta1/proposals',
+        'https://blockdaemon-terra-lcd.api.bdnodes.net:1317/cosmos/gov/v1beta1/proposals',
         'https://ping.pub/terra-luna/gov'
         ],
     "umee": [  
