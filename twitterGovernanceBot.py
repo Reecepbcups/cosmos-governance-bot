@@ -65,6 +65,76 @@ chainAPIs = {
         'https://rest.comdex.one/cosmos/gov/v1beta1/proposals',
         'https://ping.pub/comdex/gov'
         ],
+
+    # New Adds:
+    "bcna": [ 
+        'https://lcd.bitcanna.io/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/bitcanna/gov'
+        ],
+    "bitsong": [ 
+        'https://lcd-bitsong.itastakers.com/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/bitsong/gov'
+        ],
+    "bostrom": [ 
+        'https://lcd.bostrom.cybernode.ai/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/bostrom/gov'
+        ],
+    "cheqd": [ 
+        'https://api.cheqd.net/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/cheqd/gov'
+        ],
+    "cro": [  
+        'https://mainnet.crypto.org:1317/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/crypto-com-chain/gov'
+        ],
+    "evmos": [  
+        'https://rest.bd.evmos.org:1317/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/evmos/gov'
+        ],
+    "gravity": [  
+        'https://gravitychain.io:1317/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/gravity-bridge/gov'
+        ],
+    "inj": [  
+        'https://public.lcd.injective.network/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/injective/gov'
+        ],
+    "iris": [  
+        'https://lcd-iris.keplr.app/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/iris-network/gov'
+        ],
+    "lum": [  
+        'https://node0.mainnet.lum.network/rest/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/LUM%20Network/gov'
+        ],
+    "regen": [  
+        'https://regen.stakesystems.io/rest/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/regen/gov'
+        ],
+    "pb": [  
+        'https://api.provenance.io/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/provenance/gov'
+        ],
+    "secret": [  
+        'https://api.secretapi.io/cosmos/gov/v1beta1/proposals',
+        'https://www.mintscan.io/secret/proposals'
+        ],
+    "sif": [  
+        'https://api.sifchain.finance:443/rest/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/sifchain/gov'
+        ],
+    # "somm": [  
+    #     'https://lcd-sommelier.keplr.app/cosmos/gov/v1beta1/proposals',
+    #     'https://sommscan.io/governance'
+    #     ],
+    "terra": [  
+        'https://blockdaemon-terra-lcd.api.bdnodes.net:1317/rest/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/terra-luna/gov'
+        ],
+    "umee": [  
+        'https://api.blue.main.network.umee.cc/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/umee/gov'
+        ],
 }
 
 
@@ -181,7 +251,7 @@ SCHEDULE_SECONDS = 1 # 1 second for testing
 output = "Bot is in test mode..."
 
 if IN_PRODUCTION:  
-    SCHEDULE_SECONDS = 20*60
+    SCHEDULE_SECONDS = 30*60 # every 30 mins
     output = "[!] BOT IS RUNNING IN PRODUCTION MODE!!!!!!!!!!!!!!!!!!"
     print(output)
     time.sleep(5) # Extra wait to ensure we want to run
