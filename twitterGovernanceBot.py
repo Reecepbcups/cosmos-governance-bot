@@ -9,6 +9,10 @@ apt install pip
 pip install requests tweepy schedule
 
 *Get REST lcd's in chain.json from https://github.com/cosmos/chain-registry
+
+todo:
+- Reduce files into 1, open file & load to dict, then check values.
+- Dump from dict to hashmap on close / exit / cancel (like bash trap command)
 '''
 
 import tweepy
@@ -86,7 +90,12 @@ chainAPIs = {
         'https://ping.pub/bitsong/gov',
         '@BitSongOfficial'
         ],
-    "bostrom": [ 
+    "band": [
+        'https://laozi1.bandchain.org/api/cosmos/gov/v1beta1/proposals',
+        'https://ping.pub/band-protocol/gov',
+        '@BandProtocol'
+        ],
+    "boot": [ # Bostrom
         'https://lcd.bostrom.cybernode.ai/cosmos/gov/v1beta1/proposals',
         'https://ping.pub/bostrom/gov',
         ''
@@ -106,6 +115,11 @@ chainAPIs = {
         'https://ping.pub/evmos/gov',
         '@EvmosOrg'
         ],
+    "fetch": [
+        'https://rest-fetchhub.fetch.ai/cosmos/gov/v1beta1/proposals',
+        'https://www.mintscan.io/fetchai/proposals',
+        '@Fetch_ai'
+        ],
     "gravity": [  
         'https://gravitychain.io:1317/cosmos/gov/v1beta1/proposals',
         'https://ping.pub/gravity-bridge/gov',
@@ -120,6 +134,11 @@ chainAPIs = {
         'https://lcd-iris.keplr.app/cosmos/gov/v1beta1/proposals',
         'https://ping.pub/iris-network/gov',
         '@irisnetwork'
+        ],
+    'iov': [ #Starname
+        "https://lcd-iov.keplr.app/cosmos/gov/v1beta1/proposals",
+        'https://www.mintscan.io/starname/proposals',
+        '@starname_me'
         ],
     "lum": [  
         'https://node0.mainnet.lum.network/rest/cosmos/gov/v1beta1/proposals',
@@ -182,7 +201,7 @@ def tweet(ticker, propID, title, voteEndTime=""):
     message = f"${str(ticker).upper()} | Proposal #{propID} | VOTING_PERIOD | {title} | {chainAPIs[ticker][1]}/{propID}"
     
     twitterAt = chainAPIs[ticker][2] # @'s blockchains official twitter
-    if twitterAt is not None and len(twitterAt) > 1:
+    if len(twitterAt) > 1:
         twitterAt = f'@{twitterAt}' if not twitterAt.startswith('@') else twitterAt
         message += f" | {twitterAt}"
 
@@ -268,15 +287,14 @@ def checkIfNewestProposalIDIsGreaterThanLastTweet(ticker):
                 # votePeriodEnd=betterTimeFormat(prop['voting_end_time'])
             )
 
-
 def runChecks():
     for chain in chainAPIs.keys():
         try:
             checkIfNewestProposalIDIsGreaterThanLastTweet(chain)
         except Exception as e:
             print(f"{chain} checkProp failed: {e}")
-            
-    print("All chains checked, waiting")
+
+    print(f"All chains checked {time.ctime()}, waiting") # pretty time output
 
 
 SCHEDULE_SECONDS = 3
