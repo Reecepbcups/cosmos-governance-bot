@@ -18,7 +18,7 @@ DIG, DVPN, KAVA, LIKE, XPRT, BCNA, BITSONG, BOSTROM, CHEQD, PB, SIF, UMEE, Starn
 *If you do not plan on using one of the bots, you do not need to fill out the values.*
 
 2) If you want to allow all tickers to be announced, leave TICKERS_TO_ANNOUNCE as []
-     To specify tickers, add them in a list as `["dig","osmo","huahua"]` matching tickers in the twitterGovBot.py script chainIds*
+<br>To specify tickers, add them in a list as `["dig","osmo","huahua"]` matching tickers in the twitterGovBot.py script chainIds*
 
 3) Open the .py script and edit the following:
 
@@ -27,10 +27,10 @@ DISCORD<br>
 TWITTER<br>
 
 USE_PYTHON_RUNNABLE 
-*if true, run the script in a screen such as `screen -S bot python3 twitterGovernanceBot.py`*
-*if false, use a cronjob to auto run it when you want, use https://crontab.guru/examples.html for help, must cd to directory first*
+*if true, run the script in a screen such as `screen -S bot python3 twitterGovernanceBot.py`*<br>
+*if false, use a cronjob to auto run it when you want, use https://crontab.guru/examples.html for help, must cd to directory first*<br>
 
-such as: `*/30 * * * * cd /root/twitterGovBot && python3 twitterGovernanceBot.py`
+such as: `*/30 * * * * cd /root/twitterGovBot && python3 twitterGovernanceBot.py`<br>
 
 LOG_RUNS
 *Just adds logs.txt for when the script is run to ensure success*
