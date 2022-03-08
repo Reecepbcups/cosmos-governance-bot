@@ -22,9 +22,9 @@ DIG, DVPN, KAVA, LIKE, XPRT, BCNA, BITSONG, BOSTROM, CHEQD, PB, SIF, UMEE, Starn
 
 3) Open the .py script and edit the following:
 
-IN_PRODUCTION
-DISCORD
-TWITTER
+IN_PRODUCTION<br>
+DISCORD<br>
+TWITTER<br>
 
 USE_PYTHON_RUNNABLE 
 *if true, run the script in a screen such as `screen -S bot python3 twitterGovernanceBot.py`*
