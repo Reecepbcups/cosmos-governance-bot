@@ -3,7 +3,7 @@ A twitter + discord webhook bot to notify users of governance proposals when in 
 https://twitter.com/CosmosGovNotifs
 
 Discord notifications can be found in the ChandraStation Discord
-discord.gg/2GwEehcTa4
+https://discord.gg/2GwEehcTa4
 
 # Current Notifications for:
 ## Major
