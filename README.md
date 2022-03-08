@@ -27,10 +27,10 @@ DISCORD<br>
 TWITTER<br>
 
 USE_PYTHON_RUNNABLE 
-*if true, run the script in a screen such as `screen -S bot python3 twitterGovernanceBot.py`*<br>
+*if true, run the script in a screen such as `screen -S bot python3 GovBot.py`*<br>
 *if false, use a cronjob to auto run it when you want, use https://crontab.guru/examples.html for help, must cd to directory first*<br>
 
-such as: `*/30 * * * * cd /root/twitterGovBot && python3 twitterGovernanceBot.py`<br>
+such as: `*/30 * * * * cd /root/CosmosBot && python3 GovBot.py`<br>
 
 LOG_RUNS
 *Just adds logs.txt for when the script is run to ensure success*
