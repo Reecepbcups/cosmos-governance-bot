@@ -30,5 +30,7 @@ USE_PYTHON_RUNNABLE
 *if true, run the script in a screen such as `screen -S bot python3 twitterGovernanceBot.py`*
 *if false, use a cronjob to auto run it when you want, use https://crontab.guru/examples.html for help, must cd to directory first*
 
+such as: `*/30 * * * * cd /root/twitterGovBot && python3 twitterGovernanceBot.py`
+
 LOG_RUNS
 *Just adds logs.txt for when the script is run to ensure success*
