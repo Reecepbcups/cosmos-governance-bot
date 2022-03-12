@@ -58,5 +58,6 @@ We just pass it through discords endpoints & simulate it being on. So no hassle 
 - Now back on the browser, click on "OAuth2" on the left
 - Under the "URL Generator" tab, in scopes select "bot" (center, middle)
 - In Bot Permissions, select the following:
-[[img/bot-values.png]]
+![bot-values](https://user-images.githubusercontent.com/31943163/158006570-a48077f7-41fd-4440-80bf-67fe1bf516b8.png)
+
 - Then at the bottom you should have a generated URL, copy this into your browser & invite it to the server
