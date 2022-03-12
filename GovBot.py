@@ -30,7 +30,7 @@ DISCORD_THREADS = True
 TWITTER = False
 # If false, it is up to you to schedule via crontab -e such as: */30 * * * * cd /root/twitterGovBot && python3 twitterGovernanceBot.py
 USE_PYTHON_RUNNABLE = False
-LOG_RUNS = True
+LOG_RUNS = False
 
 # List of all APIS to check
 chainAPIs = {
@@ -255,8 +255,13 @@ def _SetMaxArchiveDurationLength() -> int:
     global THREAD_ARCHIVE_MINUTES
     # Archive lengths are 1 or 24 hours for level 0 boosted servers, 3 days for level 1, and 7 days for level 2
     # Returns max time user
-    v = requests.get(f"https://discord.com/api/v10/guilds/{GUILD_ID}", headers=BOT_TOKEN_HEADERS_FOR_API).json()
+    v = requests.get(f"{DISCORD_API}/guilds/{GUILD_ID}", headers=BOT_TOKEN_HEADERS_FOR_API).json()    
     # print(v)
+    
+    if 'message' in v.keys() and v['message'] == '401: Unauthorized':
+        print("Discord API Error: 401 Unauthorized. Please ensure you have the correct BOT_TOKEN set in secrets.json")
+        exit()
+
     guildBoostLevel = int(v['premium_tier'])
     max_len = BOOSTED_DISCORD_THREAD_TIME_TIERS[guildBoostLevel]
     
