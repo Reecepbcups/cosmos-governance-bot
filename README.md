@@ -34,30 +34,29 @@ such as: `*/30 * * * * cd /root/CosmosBot && python3 GovBot.py`<br>
 
 LOG_RUNS
 *Just adds logs.txt for when the script is run to ensure success*
-
+</br></br>
 ## Discord Threads
 For threads, you must set `DISCORD = True` in GovBot.py. Within your discord client you will need 2 things:<br>
 - The Channel_ID *(right click the channel and it should be at the very bottom. If not, settings > Advanced > Developer Mode)*<br>
-- Guild ID (right click the server icon, and copy ID)
-
+- Guild ID (right click the server icon, and copy ID)<br>
+NOTE: You must use the same channel_id as the webhook is generated on
+</br></br>
 Next you need to set your `THREAD_ARCHIVE_MINUTES`. There are 4 values you can do: `60, 1440, 4320, 10080`</br>
 - By default level 0 servers only have 60 and 1440 (24hours). To get access to other values, you have to increase your server boost.
-
-Finally you must setup a bot application, HOWEVER it is not actually run, we just pass it through discords endpoints & simulate it being on. So no hassle :)
+</br></br>
+Finally you must setup a bot application, HOWEVER it is not actually run like a normal bot. 
+We just pass it through discords endpoints & simulate it being on. So no hassle :)
 - https://discord.com/developers/applications
 - New Application in the top (Then name it, create)
 - On the left, click "Bot"
 - On the right, "Add Bot", then "Yes Do It"
-
-
+</br></br>
 - Click on "Reset Token' to get the Bots Token, then "Yes Do It" (You may be required to enter a 2fa code here)
 - *Example Token: OTUyMDgwOTQ5NzcwODUwMzY1.Yiw0ew.8Fsxi4I4IMgmAICyh_HdsIXL_jo*
 - Paste this token into the secret.json file under "DISCORD_THREADS" -> "BOT_TOKEN"
-
-
+</br></br>
 - Now back on the browser, click on "OAuth2" on the left
 - Under the "URL Generator" tab, in scopes select "bot" (center, middle)
-- In Bot Permissions, select "Create Public Threads" & "Create Private Threads" (center, top & middle)
+- In Bot Permissions, select the following:
+[[img/bot-values.png]]
 - Then at the bottom you should have a generated URL, copy this into your browser & invite it to the server
-
-NOTE: You must use the same channel_id as the webhook is generated on
