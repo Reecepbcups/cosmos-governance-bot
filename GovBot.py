@@ -41,37 +41,37 @@ chainAPIs = {
         ],
     'juno': [
         'https://lcd-juno.itastakers.com/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/juno/gov',
+        'https://www.mintscan.io/juno/proposals',
         ""
         ],
     'huahua': [
         'https://api.chihuahua.wtf/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/chihuahua/gov',
+        'https://www.mintscan.io/chihuahua/proposals',
         "@ChihuahuaChain"
         ],
     'osmo': [
         'https://lcd-osmosis.blockapsis.com/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/osmosis/gov',
+        'https://www.mintscan.io/osmosis/proposals',
         '@osmosiszone'
         ],
     'atom': [
         'https://lcd-cosmoshub.blockapsis.com/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/cosmos/gov',
+        'https://www.mintscan.io/cosmos/proposals',
         "@cosmos"
         ],
     'akt': [
         'https://akash.api.ping.pub/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/akash-network/gov',
+        'https://www.mintscan.io/akash/proposals',
         '@akashnet_'
         ],
     'stars': [
         "https://rest.stargaze-apis.com/cosmos/gov/v1beta1/proposals",
-        'https://ping.pub/stargaze/gov',
+        'https://www.mintscan.io/stargaze/proposals',
         '@StargazeZone'
         ],
     'kava': [
         'https://api.data.kava.io/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/kava/gov',
+        'https://www.mintscan.io/kava/proposals',
         '@kava_platform'
         ],
     'like': [
@@ -81,28 +81,28 @@ chainAPIs = {
         ],
     'xprt': [
         'https://rest.core.persistence.one/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/persistence/gov',
+        'https://www.mintscan.io/persistence/proposals',
         '@PersistenceOne'
         ],
     'cmdx': [
         'https://rest.comdex.one/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/comdex/gov',
+        'https://www.mintscan.io/comdex/proposals',
         '@ComdexOfficial'
         ],
     # New Adds:
     "bcna": [ 
         'https://lcd.bitcanna.io/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/bitcanna/gov',
+        'https://www.mintscan.io/bitcanna/proposals',
         '@BitCannaGlobal'
         ],
     "btsg": [ 
         'https://lcd-bitsong.itastakers.com/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/bitsong/gov',
+        'https://www.mintscan.io/bitsong/proposals',
         '@BitSongOfficial'
         ],
     "band": [
         'https://laozi1.bandchain.org/api/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/band-protocol/gov',
+        'https://www.mintscan.io/band/proposals',
         '@BandProtocol'
         ],
     "boot": [ # Bostrom
@@ -117,12 +117,12 @@ chainAPIs = {
         ],
     "cro": [  
         'https://mainnet.crypto.org:1317/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/crypto-com-chain/gov',
+        'https://www.mintscan.io/crypto-org/proposals',
         '@cryptocom'
         ],
     "evmos": [  
         'https://rest.bd.evmos.org:1317/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/evmos/gov',
+        'https://www.mintscan.io/evmos/proposals',
         '@EvmosOrg'
         ],
     "fetch": [
@@ -132,17 +132,17 @@ chainAPIs = {
         ],
     "grav": [  
         'https://gravitychain.io:1317/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/gravity-bridge/gov',
+        'https://www.mintscan.io/gravity-bridge/proposals',
         '@gravity_bridge'
         ],
     "inj": [  
         'https://public.lcd.injective.network/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/injective/gov',
+        'https://www.mintscan.io/injective/proposals',
         '@InjectiveLabs'
         ],
     "iris": [  
         'https://lcd-iris.keplr.app/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/iris-network/gov',
+        'https://www.mintscan.io/iris/proposals',
         '@irisnetwork'
         ],
     'iov': [ #Starname
@@ -152,12 +152,12 @@ chainAPIs = {
         ],
     "lum": [  
         'https://node0.mainnet.lum.network/rest/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/LUM%20Network/gov',
+        'https://www.mintscan.io/lum/proposals',
         '@lum_network'
         ],
     "regen": [  
         'https://regen.stakesystems.io/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/regen/gov',
+        'https://www.mintscan.io/regen/proposals',
         '@regen_network'
         ],
     "pb": [  
@@ -172,12 +172,12 @@ chainAPIs = {
         ],
     "sent": [  
         'https://lcd-sentinel.keplr.app/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/sentinel/gov',
+        'https://www.mintscan.io/sentinel/proposals',
         '@Sentinel_co'
         ],
     "sif": [  
         'https://api.sifchain.finance:443/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/sifchain/gov',
+        'https://www.mintscan.io/sifchain/proposals',
         "@sifchain"
         ],
     "terra": [  
@@ -187,7 +187,7 @@ chainAPIs = {
         ],
     "umee": [  
         'https://api.blue.main.network.umee.cc/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/umee/gov',
+        'https://www.mintscan.io/umee/proposals',
         "@Umee_CrossChain"
         ],
 }
