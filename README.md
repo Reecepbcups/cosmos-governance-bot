@@ -5,6 +5,9 @@ https://twitter.com/CosmosGovNotifs
 Discord notifications can be found in the ChandraStation Discord
 https://discord.gg/2GwEehcTa4
 
+TODO:
+- Add creating channel threads for proposals `juno-16` for example (can webhook do? or move to optional DiscBot)
+
 # Current Notifications for:
 ## Major
 ATOM, OSMO, JUNO, AKT, SECRET, TERRA, HUAHUA, STARS, CMDX, CRO, EVMOS, GRAVITY, INJ, IRIS, LUM, REGEN 
