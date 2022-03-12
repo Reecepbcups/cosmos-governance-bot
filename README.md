@@ -17,8 +17,8 @@ DIG, DVPN, KAVA, LIKE, XPRT, BCNA, BITSONG, BOSTROM, CHEQD, PB, SIF, UMEE, Starn
 1) Update secrets.json to your own values. 
 *If you do not plan on using one of the bots, you do not need to fill out the values.*
 
-2) If you want to allow all tickers to be announced, leave TICKERS_TO_ANNOUNCE as []
-<br>To specify tickers, add them in a list as `["dig","osmo","huahua"]` matching tickers in the twitterGovBot.py script chainIds*
+2) If you want to allow all tickers to be announced, leave TICKERS_TO_ANNOUNCE as `[]`
+<br>To specify tickers, add them in a list as `["dig","osmo","huahua"]` matching tickers in the GovBot.py script chainIds*
 
 3) Open the .py script and edit the following:
 
