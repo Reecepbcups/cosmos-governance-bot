@@ -3,9 +3,10 @@
 '''
 Reece Williams (Reecepbcups | PBCUPS Validator) | February 9th, 2022
 - Twitter bot to monitor and report on COSMOS governance proposals
+- (Mar 8) Discord webhook to post proposals 
+- (Mar 12) Discord Threads to allow for discussion of new proposals 
 
-apt install pip
-pip install requests tweepy schedule discord
+python3 -m pip install requests tweepy schedule discord
 
 *Get REST lcd's in chain.json from https://github.com/cosmos/chain-registry
 '''
@@ -24,12 +25,11 @@ import tweepy
 
 # When true, will actually tweet / discord post
 IN_PRODUCTION = True
-DISCORD = False
-TWITTER = True
-
+DISCORD = True
+DISCORD_THREADS = True
+TWITTER = False
 # If false, it is up to you to schedule via crontab -e such as: */30 * * * * cd /root/twitterGovBot && python3 twitterGovernanceBot.py
 USE_PYTHON_RUNNABLE = False
-
 LOG_RUNS = True
 
 # List of all APIS to check
@@ -195,8 +195,9 @@ chainAPIs = {
 # Don't touch below
 proposals = {}
 TICKERS_TO_ANNOUNCE = []
+DISCORD_API = "https://discord.com/api/v9"
 IS_FIRST_RUN = False
-
+BOOSTED_DISCORD_THREAD_TIME_TIERS = {0: 1440,1: 4320,2: 10080,3: 10080}
 
 with open('secrets.json', 'r') as f:
     secrets = json.load(f)
@@ -222,6 +223,18 @@ with open('secrets.json', 'r') as f:
         AVATAR_URL = discSecrets['AVATAR_URL']
         HEX_COLOR = int(discSecrets['HEX_COLOR'], 16)
 
+        if DISCORD_THREADS:
+            discTreads = secrets['DISCORD_THREADS']
+            CHANNEL_ID = int(discTreads['CHANNEL_ID'])
+            GUILD_ID = int(discTreads['GUILD-SERVER_ID'])
+            DO_ARCHIVE_THREADS = bool(discTreads['ARCHIVE_THREADS'])
+            THREAD_ARCHIVE_MINUTES = int(discTreads['THREAD_ARCHIVE_MINUTES'])
+            BOT_TOKEN = discTreads['BOT_TOKEN']                 
+            BOT_TOKEN_HEADERS_FOR_API = {
+                "Content-Type": "application/json",
+                "authorization": "Bot " + BOT_TOKEN,    
+            }
+
 def load_proposals_from_file() -> dict:
     global proposals
     with open(filename, 'r') as f:
@@ -238,16 +251,53 @@ def update_proposal_value(ticker, newPropNumber):
     proposals[ticker] = newPropNumber
     save_proposals()
 
+def _SetMaxArchiveDurationLength() -> int:
+    global THREAD_ARCHIVE_MINUTES
+    # Archive lengths are 1 or 24 hours for level 0 boosted servers, 3 days for level 1, and 7 days for level 2
+    # Returns max time user
+    v = requests.get(f"https://discord.com/api/v10/guilds/{GUILD_ID}", headers=BOT_TOKEN_HEADERS_FOR_API).json()
+    # print(v)
+    guildBoostLevel = int(v['premium_tier'])
+    max_len = BOOSTED_DISCORD_THREAD_TIME_TIERS[guildBoostLevel]
+    
+    if THREAD_ARCHIVE_MINUTES not in [60, 1440, 4320, 10080]:
+        THREAD_ARCHIVE_MINUTES = max_len
+        print(f"\nInvalid thread archive length: {THREAD_ARCHIVE_MINUTES}")
+        print(f"Using {max_len} minutes. Other options: [60, 1440, 4320, 10080]")
+    elif THREAD_ARCHIVE_MINUTES > max_len:
+        THREAD_ARCHIVE_MINUTES = max_len
+        print(f"\nWARNING: THREAD_ARCHIVE_MINUTES is greater than the max archive length for this server. Setting to {max_len}")
+        print(f"You need a higher boost level to use 4320 & 100080 sadly :(")
 
-def getProposalEmbed(ticker, propID, title, desc, chainExplorerLink) -> discord.Embed:          
-    embed = discord.Embed(title=f"${str(ticker).upper()} #{propID} | {title}", description=desc, timestamp=datetime.datetime.utcnow(), color=HEX_COLOR) #color=discord.Color.dark_gold()
-    embed.add_field(name="Link", value=f"{chainExplorerLink}")
-    embed.set_thumbnail(url=AVATAR_URL)
-    return embed
+    return max_len
+
+def discord_create_thread(message_id, thread_name):
+    global DO_ARCHIVE_THREADS
+    data = { # https://discord.com/developers/docs/resources/channel#allowed-mentions-object-json-params-thread
+        "name": thread_name,
+        "archived": DO_ARCHIVE_THREADS,
+        "auto_archive_duration": THREAD_ARCHIVE_MINUTES, # set via _SetMaxArchiveDurationLength on main() based on server boost level
+        "locked": False,
+        "invitable": False,
+        "rate_limit_per_user": 5,
+    }
+    # print(data)
+    # https://discord.com/developers/docs/topics/gateway#thread-create
+    return requests.post(f"{DISCORD_API}/channels/{CHANNEL_ID}/messages/{message_id}/threads", json=data, headers=BOT_TOKEN_HEADERS_FOR_API).json()    
+
+def _getLastMessageID():
+    # gets last message from channel that the webhook just sent too. This way we can make thread from it without bot running all the time
+    # https://discord.com/developers/docs/resources/channel#get-channel-messages
+    res = requests.get(f"{DISCORD_API}/channels/{CHANNEL_ID}/messages?limit=1", headers=BOT_TOKEN_HEADERS_FOR_API).json()
+    # print(res)
+    return res[0]['id']
 
 def discord_post_to_channel(ticker, propID, title, description, chainExploreLink):
+    embed = discord.Embed(title=f"${str(ticker).upper()} #{propID} | {title}", description=description, timestamp=datetime.datetime.utcnow(), color=HEX_COLOR) #color=discord.Color.dark_gold()
+    embed.add_field(name="Link", value=f"{chainExploreLink}")
+    embed.set_thumbnail(url=AVATAR_URL)
     webhook = Webhook.from_url(WEBHOOK_URL, adapter=RequestsWebhookAdapter()) # Initializing webhook
-    webhook.send(username=USERNAME,embed=getProposalEmbed(ticker, propID, title, description, chainExploreLink)) # Executing webhook
+    webhook.send(username=USERNAME,embed=embed) # Executing webhook
 
 def post_update(ticker, propID, title, description=""):
     chainExploreLink = f"{chainAPIs[ticker][1]}/{propID}"
@@ -266,6 +316,9 @@ def post_update(ticker, propID, title, description=""):
                 print(f"Tweet sent for {tweet.id}: {message}")
             if DISCORD:
                 discord_post_to_channel(ticker, propID, title, description, chainExploreLink)
+                if DISCORD_THREADS:
+                    discord_create_thread(_getLastMessageID(), f"{ticker}-{propID}") 
+                    pass
         except Exception as err:
             print("Tweet failed due to being duplicate OR " + str(err)) 
     
@@ -360,7 +413,8 @@ def updateChainsToNewestProposalsIfThisIsTheFirstTimeRunning():
 if __name__ == "__main__":        
     updateChainsToNewestProposalsIfThisIsTheFirstTimeRunning()
 
-    load_proposals_from_file()
+    load_proposals_from_file()    
+    _SetMaxArchiveDurationLength()
 
     # informs user & setups of legnth of time between runs
     if IN_PRODUCTION:
