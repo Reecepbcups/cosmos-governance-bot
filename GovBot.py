@@ -332,8 +332,9 @@ def post_update(ticker, propID, title, description=""):
                 print(f"Tweet sent for {tweet.id}: {message}")
             if DISCORD:
                 discord_post_to_channel(ticker, propID, title, description, chainExploreLink)
-                discord_add_reacts(_getLastMessageID())
                 if DISCORD_THREADS:
+                    # Threads must be enabled for reacts bc bot token
+                    discord_add_reacts(_getLastMessageID())
                     discord_create_thread(_getLastMessageID(), f"{ticker}-{propID}") 
                     pass
         except Exception as err:
