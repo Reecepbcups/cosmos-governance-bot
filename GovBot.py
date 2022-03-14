@@ -222,6 +222,7 @@ with open('secrets.json', 'r') as f:
         USERNAME = discSecrets['USERNAME']
         AVATAR_URL = discSecrets['AVATAR_URL']
         HEX_COLOR = int(discSecrets['HEX_COLOR'], 16)
+        READACTION_RATE_LIMIT = 0.1
 
         if DISCORD_THREADS:
             discTreads = secrets['DISCORD_THREADS']
@@ -304,6 +305,16 @@ def discord_post_to_channel(ticker, propID, title, description, chainExploreLink
     webhook = Webhook.from_url(WEBHOOK_URL, adapter=RequestsWebhookAdapter()) # Initializing webhook
     webhook.send(username=USERNAME,embed=embed) # Executing webhook
 
+def discord_add_reacts(message_id): # needs READ_MESSAGE_HISTORY & ADD_REACTIONS
+    # https://discord.com/developers/docs/resources/channel#create-reaction
+    # https://discord.com/developers/docs/resources/emoji    
+    for emoji in ["✅", "❌", "⭕", "🚫"]:
+        print("PUT request for emoji: " + emoji)
+        r = requests.put(f"{DISCORD_API}/channels/{CHANNEL_ID}/messages/{message_id}/reactions/{emoji}/@me", headers=BOT_TOKEN_HEADERS_FOR_API)
+        if r.text != "":
+            print(r.text)
+        time.sleep(READACTION_RATE_LIMIT) # rate limit
+
 def post_update(ticker, propID, title, description=""):
     chainExploreLink = f"{chainAPIs[ticker][1]}/{propID}"
     message = f"${str(ticker).upper()} | Proposal #{propID} | VOTING_PERIOD | {title} | {chainExploreLink}"
@@ -321,6 +332,7 @@ def post_update(ticker, propID, title, description=""):
                 print(f"Tweet sent for {tweet.id}: {message}")
             if DISCORD:
                 discord_post_to_channel(ticker, propID, title, description, chainExploreLink)
+                discord_add_reacts(_getLastMessageID())
                 if DISCORD_THREADS:
                     discord_create_thread(_getLastMessageID(), f"{ticker}-{propID}") 
                     pass
