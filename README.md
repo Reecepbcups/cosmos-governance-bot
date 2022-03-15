@@ -1,9 +1,12 @@
 # CosmosGovernanceProposalBot
-A twitter + discord webhook bot to notify users of governance proposals when in voting period
+A twitter + discord webhook bot to notify users of governance proposals when in voting period<br/>
 https://twitter.com/CosmosGovNotifs
 
-Discord notifications can be found in the ChandraStation Discord
+Discord notifications can be found in the ChandraStation Discord<br/>
 https://discord.gg/2GwEehcTa4
+
+Support our delevelopment with delegations to <b>![pbcups](https://www.mintscan.io/osmosis/validators/osmovaloper18yaulrk9czghegrnykfe4fthl69m488qsrrfdr)<b><br/>
+
 
 # Current Notifications for:
 ## Major
