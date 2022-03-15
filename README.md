@@ -5,7 +5,7 @@ https://twitter.com/CosmosGovNotifs
 Discord notifications can be found in the ChandraStation Discord<br/>
 https://discord.gg/2GwEehcTa4
 
-Support our delevelopment with delegations to <b>[pbcups](https://www.mintscan.io/osmosis/validators/osmovaloper18yaulrk9czghegrnykfe4fthl69m488qsrrfdr)<b><br/>
+Support our delevelopment with delegations to <b><u>[pbcups ($OSMO & $DIG)](https://www.mintscan.io/osmosis/validators/osmovaloper18yaulrk9czghegrnykfe4fthl69m488qsrrfdr)</u></b><br/>
 
 
 # Current Notifications for:
