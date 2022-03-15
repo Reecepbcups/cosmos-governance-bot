@@ -1,12 +1,13 @@
 # CosmosGovernanceProposalBot
+Support delevelopment with delegations to <b><u>[pbcups ($OSMO & $DIG)](https://www.mintscan.io/osmosis/validators/osmovaloper18yaulrk9czghegrnykfe4fthl69m488qsrrfdr)</u></b><br/>
+
 A twitter + discord webhook bot to notify users of governance proposals when in voting period<br/>
-https://twitter.com/CosmosGovNotifs
 
-Discord notifications can be found in the ChandraStation Discord<br/>
-https://discord.gg/2GwEehcTa4
+Twitter:
+[@CosmosGovNotifs](https://twitter.com/CosmosGovNotifs)
 
-Support our delevelopment with delegations to <b><u>[pbcups ($OSMO & $DIG)](https://www.mintscan.io/osmosis/validators/osmovaloper18yaulrk9czghegrnykfe4fthl69m488qsrrfdr)</u></b><br/>
-
+Discord Notifications<br/>
+[ChandraStation Discord](https://discord.gg/2GwEehcTa4)
 
 # Current Notifications for:
 ## Major
