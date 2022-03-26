@@ -2,10 +2,10 @@
 A twitter + discord webhook bot to notify users of governance proposals when in voting period<br/>
 Support delevelopment with delegations to <b><u>[pbcups ($OSMO & $DIG)](https://www.mintscan.io/osmosis/validators/osmovaloper18yaulrk9czghegrnykfe4fthl69m488qsrrfdr)</u></b><br/>
 
-Twitter: [@CosmosGovNotifs](https://twitter.com/CosmosGovNotifs)
-![image](https://user-images.githubusercontent.com/31943163/160246645-a4a58384-ec9a-4019-bba8-88af6016e0d7.png)
+Twitter: [@CosmosGovNotifs](https://twitter.com/CosmosGovNotifs) <br />
+![image](https://user-images.githubusercontent.com/31943163/160246645-a4a58384-ec9a-4019-bba8-88af6016e0d7.png)<br />
 
-Discord Notifications: [ChandraStation Discord](https://discord.gg/2GwEehcTa4)
+Discord Notifications: [ChandraStation Discord](https://discord.gg/2GwEehcTa4) <br />
 ![image](https://user-images.githubusercontent.com/31943163/160246630-b53f88df-17da-4da1-b360-9f338c46c967.png)
 
 
