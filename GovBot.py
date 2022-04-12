@@ -11,188 +11,38 @@ python3 -m pip install requests tweepy schedule discord
 *Get REST lcd's in chain.json from https://github.com/cosmos/chain-registry
 '''
 
-import requests
+import datetime
+import discord
+import json
 import os
+import requests
 import schedule
 import time
-import json
-import datetime
+import tweepy
 
-import discord
 from discord import Webhook, RequestsWebhookAdapter
 
-import tweepy
+from ChainApis import chainAPIs, customExplorerLinks
+
+# == Configuration ==
 
 # When true, will actually tweet / discord post
 IN_PRODUCTION = True
 DISCORD = True
-DISCORD_THREADS = True
+DISCORD_THREADS_AND_REACTIONS = True
 TWITTER = False
 # If false, it is up to you to schedule via crontab -e such as: */30 * * * * cd /root/twitterGovBot && python3 twitterGovernanceBot.py
 USE_PYTHON_RUNNABLE = False
 LOG_RUNS = False
 
-# List of all APIS to check
-chainAPIs = {
-    "dig": [ 
-        'https://api-1-dig.notional.ventures/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/dig/gov',
-        "@dig_chain"
-        ],
-    'juno': [
-        'https://lcd-juno.itastakers.com/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/juno/proposals',
-        ""
-        ],
-    'huahua': [
-        'https://api.chihuahua.wtf/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/chihuahua/proposals',
-        "@ChihuahuaChain"
-        ],
-    'osmo': [
-        'https://lcd-osmosis.blockapsis.com/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/osmosis/proposals',
-        '@osmosiszone'
-        ],
-    'atom': [
-        'https://lcd-cosmoshub.blockapsis.com/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/cosmos/proposals',
-        "@cosmos"
-        ],
-    'akt': [
-        'https://akash.api.ping.pub/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/akash/proposals',
-        '@akashnet_'
-        ],
-    'stars': [
-        "https://rest.stargaze-apis.com/cosmos/gov/v1beta1/proposals",
-        'https://www.mintscan.io/stargaze/proposals',
-        '@StargazeZone'
-        ],
-    'kava': [
-        'https://api.data.kava.io/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/kava/proposals',
-        '@kava_platform'
-        ],
-    'like': [
-        'https://mainnet-node.like.co/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/likecoin/gov',
-        '@likecoin'
-        ],
-    'xprt': [
-        'https://rest.core.persistence.one/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/persistence/proposals',
-        '@PersistenceOne'
-        ],
-    'cmdx': [
-        'https://rest.comdex.one/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/comdex/proposals',
-        '@ComdexOfficial'
-        ],
-    # New Adds:
-    "bcna": [ 
-        'https://lcd.bitcanna.io/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/bitcanna/proposals',
-        '@BitCannaGlobal'
-        ],
-    "btsg": [ 
-        'https://lcd-bitsong.itastakers.com/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/bitsong/proposals',
-        '@BitSongOfficial'
-        ],
-    "band": [
-        'https://laozi1.bandchain.org/api/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/band/proposals',
-        '@BandProtocol'
-        ],
-    "boot": [ # Bostrom
-        'https://lcd.bostrom.cybernode.ai/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/bostrom/gov',
-        ''
-        ],
-    "cheqd": [ 
-        'https://api.cheqd.net/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/cheqd/gov',
-        '@cheqd_io'
-        ],
-    "cro": [  
-        'https://mainnet.crypto.org:1317/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/crypto-org/proposals',
-        '@cryptocom'
-        ],
-    "evmos": [  
-        'https://rest.bd.evmos.org:1317/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/evmos/proposals',
-        '@EvmosOrg'
-        ],
-    "fetch": [
-        'https://rest-fetchhub.fetch.ai/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/fetchai/proposals',
-        '@Fetch_ai'
-        ],
-    "grav": [  
-        'https://gravitychain.io:1317/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/gravity-bridge/proposals',
-        '@gravity_bridge'
-        ],
-    "inj": [  
-        'https://public.lcd.injective.network/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/injective/proposals',
-        '@InjectiveLabs'
-        ],
-    "iris": [  
-        'https://lcd-iris.keplr.app/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/iris/proposals',
-        '@irisnetwork'
-        ],
-    'iov': [ #Starname
-        "https://lcd-iov.keplr.app/cosmos/gov/v1beta1/proposals",
-        'https://www.mintscan.io/starname/proposals',
-        '@starname_me'
-        ],
-    "lum": [  
-        'https://node0.mainnet.lum.network/rest/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/lum/proposals',
-        '@lum_network'
-        ],
-    "regen": [  
-        'https://regen.stakesystems.io/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/regen/proposals',
-        '@regen_network'
-        ],
-    "pb": [  
-        'https://api.provenance.io/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/provenance/gov',
-        ''
-        ],
-    "secret": [  
-        'https://api.scrt.network/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/secret/proposals',
-        '@SecretNetwork'
-        ],
-    "sent": [  
-        'https://lcd-sentinel.keplr.app/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/sentinel/proposals',
-        '@Sentinel_co'
-        ],
-    "sif": [  
-        'https://api.sifchain.finance:443/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/sifchain/proposals',
-        "@sifchain"
-        ],
-    "terra": [  
-        'https://blockdaemon-terra-lcd.api.bdnodes.net:1317/cosmos/gov/v1beta1/proposals',
-        'https://ping.pub/terra-luna/gov',
-        "@terra_money"
-        ],
-    "umee": [  
-        'https://api.blue.main.network.umee.cc/cosmos/gov/v1beta1/proposals',
-        'https://www.mintscan.io/umee/proposals',
-        "@Umee_CrossChain"
-        ],
-}
+explorer = "ping" # ping or mintscan
 
-# Don't touch below
+USE_CUSTOM_LINKS = True
+if USE_CUSTOM_LINKS:
+    customLinks = customExplorerLinks
+
+# Don't touch below --------------------------------------------------
+
 proposals = {}
 TICKERS_TO_ANNOUNCE = []
 DISCORD_API = "https://discord.com/api/v9"
@@ -224,7 +74,7 @@ with open('secrets.json', 'r') as f:
         HEX_COLOR = int(discSecrets['HEX_COLOR'], 16)
         READACTION_RATE_LIMIT = 0.1
 
-        if DISCORD_THREADS:
+        if DISCORD_THREADS_AND_REACTIONS:
             discTreads = secrets['DISCORD_THREADS']
             CHANNEL_ID = int(discTreads['CHANNEL_ID'])
             GUILD_ID = int(discTreads['GUILD-SERVER_ID'])
@@ -254,6 +104,10 @@ def update_proposal_value(ticker, newPropNumber):
 
 def _SetMaxArchiveDurationLength() -> int:
     global THREAD_ARCHIVE_MINUTES
+
+    if DISCORD_THREADS_AND_REACTIONS == False:
+        return 0
+
     # Archive lengths are 1 or 24 hours for level 0 boosted servers, 3 days for level 1, and 7 days for level 2
     # Returns max time user
     v = requests.get(f"{DISCORD_API}/guilds/{GUILD_ID}", headers=BOT_TOKEN_HEADERS_FOR_API).json()    
@@ -299,6 +153,7 @@ def _getLastMessageID():
     return res[0]['id']
 
 def discord_post_to_channel(ticker, propID, title, description, chainExploreLink):
+    # Auto replace description's <br> & \n ?
     embed = discord.Embed(title=f"${str(ticker).upper()} #{propID} | {title}", description=description, timestamp=datetime.datetime.utcnow(), color=HEX_COLOR) #color=discord.Color.dark_gold()
     embed.add_field(name="Link", value=f"{chainExploreLink}")
     embed.set_thumbnail(url=AVATAR_URL)
@@ -309,14 +164,26 @@ def discord_add_reacts(message_id): # needs READ_MESSAGE_HISTORY & ADD_REACTIONS
     # https://discord.com/developers/docs/resources/channel#create-reaction
     # https://discord.com/developers/docs/resources/emoji    
     for emoji in ["✅", "❌", "⭕", "🚫"]:
-        print("PUT request for emoji: " + emoji)
+        # print("PUT request for emoji: " + emoji) # DEBUGIN
         r = requests.put(f"{DISCORD_API}/channels/{CHANNEL_ID}/messages/{message_id}/reactions/{emoji}/@me", headers=BOT_TOKEN_HEADERS_FOR_API)
         if r.text != "":
             print(r.text)
         time.sleep(READACTION_RATE_LIMIT) # rate limit
 
+def get_explorer_link(ticker, propId):
+    if ticker in customLinks:
+        return f"{customLinks[ticker]}/{propId}"
+
+    possibleExplorers = chainAPIs[ticker][1]
+
+    explorerToUse = explorer
+    if explorerToUse not in possibleExplorers: # If it doesn't have a mintscan, default to ping.pub (index 0)
+        explorerToUse = list(possibleExplorers.keys())[0]
+
+    return f"{chainAPIs[ticker][1][explorerToUse]}/{propId}"
+
 def post_update(ticker, propID, title, description=""):
-    chainExploreLink = f"{chainAPIs[ticker][1]}/{propID}"
+    chainExploreLink = get_explorer_link(ticker, propID)
     message = f"${str(ticker).upper()} | Proposal #{propID} | VOTING_PERIOD | {title} | {chainExploreLink}"
     
     twitterAt = chainAPIs[ticker][2] # @'s blockchains official twitter
@@ -332,7 +199,7 @@ def post_update(ticker, propID, title, description=""):
                 print(f"Tweet sent for {tweet.id}: {message}")
             if DISCORD:
                 discord_post_to_channel(ticker, propID, title, description, chainExploreLink)
-                if DISCORD_THREADS:
+                if DISCORD_THREADS_AND_REACTIONS:
                     # Threads must be enabled for reacts bc bot token
                     discord_add_reacts(_getLastMessageID())
                     discord_create_thread(_getLastMessageID(), f"{ticker}-{propID}") 
@@ -439,7 +306,13 @@ if __name__ == "__main__":
         SCHEDULE_SECONDS = 30*60
         print("[!] BOT IS RUNNING IN PRODUCTION MODE!!!!!!!!!!!!!!!!!!")
         time.sleep(5)
-        print(f"[!] Running {TICKERS_TO_ANNOUNCE} in 2 seconds")
+
+        output = "[!] Running "
+        if TICKERS_TO_ANNOUNCE == []:
+            output += "all in 2 seconds"
+        else:
+            output += f"{TICKERS_TO_ANNOUNCE} in 2 seconds"
+        print(output)
         time.sleep(2)
     else:
         SCHEDULE_SECONDS = 3
