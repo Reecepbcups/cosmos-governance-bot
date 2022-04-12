@@ -6,8 +6,7 @@ Twitter: [@CosmosGovNotifs](https://twitter.com/CosmosGovNotifs) <br />
 <img src="https://user-images.githubusercontent.com/31943163/160246645-a4a58384-ec9a-4019-bba8-88af6016e0d7.png" alt="twitter" width="450"/>
 
 Discord Notifications: [ChandraStation Discord](https://discord.gg/2GwEehcTa4) <br />
-<img src="https://user-images.githubusercontent.com/31943163/160246630-b53f88df-17da-4da1-b360-9f338c46c967.png" alt="discord" width="550"/>
-<!-- ![image](https://user-images.githubusercontent.com/31943163/160246630-b53f88df-17da-4da1-b360-9f338c46c967.png) -->
+<img src="https://user-images.githubusercontent.com/31943163/163013332-1180caac-eea0-4f22-bfb2-bc3db298294a.png" alt="discord" width="550"/>
 
 
 # Current Notifications for:
