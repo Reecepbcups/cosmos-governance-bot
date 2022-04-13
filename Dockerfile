@@ -1,17 +1,15 @@
-# I do not know docker yet, but this worked. Will learn more soon to use w/ akash
-# sudo docker build -t govbot:0.0.1 .
-# sudo docker image ls
-# sudo docker run <Id>
+# sudo docker build -t cosmos-gov-bot:0.0.1 .
+# sudo docker run -it --rm --name gov-bot cosmos-gov-bot
 
-FROM python:latest
+FROM python:3-alpine
 
 LABEL Maintainer="reecepbcups"
 
 WORKDIR /usr/app/src
 
-COPY . ./
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+COPY . .
 
 CMD [ "python", "./GovBot.py"]
