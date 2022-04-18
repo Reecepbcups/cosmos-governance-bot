@@ -154,6 +154,9 @@ def _getLastMessageID():
 
 def discord_post_to_channel(ticker, propID, title, description, chainExploreLink):
     # Auto replace description's <br> & \n ?
+    if len(description) > 4096:
+        description = description[:4090] + "....."
+
     embed = discord.Embed(title=f"${str(ticker).upper()} #{propID} | {title}", description=description, timestamp=datetime.datetime.utcnow(), color=HEX_COLOR) #color=discord.Color.dark_gold()
     embed.add_field(name="Link", value=f"{chainExploreLink}")
     embed.set_thumbnail(url=AVATAR_URL)
