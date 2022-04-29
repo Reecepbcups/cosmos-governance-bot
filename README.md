@@ -1,6 +1,6 @@
 # CosmosGovernanceProposalBot
 A twitter + discord webhook bot to notify users of governance proposals when in voting period<br/>
-Support delevelopment with delegations to <b><u>[pbcups ($OSMO & $DIG)](https://www.mintscan.io/osmosis/validators/osmovaloper18yaulrk9czghegrnykfe4fthl69m488qsrrfdr)</u></b><br/>
+Support delevelopment with delegations to <b><u>[pbcups ($DIG)](https://ping.pub/dig/staking/digvaloper1ms3k4d9j7rzpzmq3d4jg4j4kffldfnq66wxdpj)</u></b><br/>
 
 Twitter: [@CosmosGovNotifs](https://twitter.com/CosmosGovNotifs) <br />
 <img src="https://user-images.githubusercontent.com/31943163/160246645-a4a58384-ec9a-4019-bba8-88af6016e0d7.png" alt="twitter" width="450"/>
