@@ -35,7 +35,7 @@ TWITTER = False
 USE_PYTHON_RUNNABLE = False
 LOG_RUNS = False
 
-explorer = "ping" # ping or mintscan
+explorer = "mintscan" # ping or mintscan
 
 USE_CUSTOM_LINKS = True
 if USE_CUSTOM_LINKS:
