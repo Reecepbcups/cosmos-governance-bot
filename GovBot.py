@@ -22,7 +22,7 @@ import tweepy
 
 from discord import Webhook, RequestsWebhookAdapter
 
-from ChainApis import chainAPIs, customExplorerLinks
+from ChainApis import chainAPIs, customExplorerLinks, DAOs
 
 # == Configuration ==
 
@@ -152,13 +152,13 @@ def _getLastMessageID():
     # print(res)
     return res[0]['id']
 
-def discord_post_to_channel(ticker, propID, title, description, chainExploreLink):
+def discord_post_to_channel(ticker, propID, title, description, voteLink):
     # Auto replace description's <br> & \n ?
     if len(description) > 4096:
         description = description[:4090] + "....."
 
     embed = discord.Embed(title=f"${str(ticker).upper()} #{propID} | {title}", description=description, timestamp=datetime.datetime.utcnow(), color=HEX_COLOR) #color=discord.Color.dark_gold()
-    embed.add_field(name="Link", value=f"{chainExploreLink}")
+    embed.add_field(name="Link", value=f"{voteLink}")
     embed.set_thumbnail(url=AVATAR_URL)
     webhook = Webhook.from_url(WEBHOOK_URL, adapter=RequestsWebhookAdapter()) # Initializing webhook
     webhook.send(username=USERNAME,embed=embed) # Executing webhook
@@ -185,11 +185,23 @@ def get_explorer_link(ticker, propId):
 
     return f"{chainAPIs[ticker][1][explorerToUse]}/{propId}"
 
-def post_update(ticker, propID, title, description=""):
-    chainExploreLink = get_explorer_link(ticker, propID)
-    message = f"${str(ticker).upper()} | Proposal #{propID} | VOTING_PERIOD | {title} | {chainExploreLink}"
+# This is so messy, make this more OOP related
+def post_update(ticker, propID, title, description="", isDAO=False, DAOVoteLink=""):
+    chainExploreLink = DAOVoteLink
+    if isDAO == False:
+        chainExploreLink = get_explorer_link(ticker, propID)
+
+    message = f"${str(ticker).upper()} | Proposal #{propID} | VOTING | {title} | {chainExploreLink}"
+    twitterAt = ""
+
+    if isDAO == True:
+        message = message.replace(f" | {title}", "") # removes the title since DAO's dont have this function yet
+        if "twitter" in DAOs[ticker]:
+            twitterAt = DAOs[ticker]["twitter"]
+    else:
+        twitterAt = chainAPIs[ticker][2] # @'s blockchains official twitter
+
     
-    twitterAt = chainAPIs[ticker][2] # @'s blockchains official twitter
     if len(twitterAt) > 1:
         twitterAt = f'@{twitterAt}' if not twitterAt.startswith('@') else twitterAt
         message += f" | {twitterAt}"
@@ -226,6 +238,43 @@ def getAllProposals(ticker) -> list:
     except Exception as e:
         print(f"Issue with request to {ticker}: {e}")
     return props
+
+def checkIfNewerDAOProposalIsOut(daoTicker):
+    lastProposal = 0
+    if daoTicker in proposals:
+        lastProposal = int(proposals[daoTicker])
+
+    token = DAOs[daoTicker]
+    while True:        
+        checkProposalID = lastProposal + 1 # We want to check next proposal past confirmed, so if it was 0 (never) = check 1
+
+        r = requests.get(f"{token['json']}/{checkProposalID}.json").json() # get the JSON static page
+        # print(r)
+        if r['pageProps']['innerProps']['exists']: # If this is true, this is a proposal
+
+            if IS_FIRST_RUN == False: # we only write DAO proposals to discord / twitter when its not the first run or it would spam ALL proposals on start
+                print(f"Proposal {checkProposalID} exists")
+                # Announce it as live
+                title = f"{token['name']} Proposal #{checkProposalID}"
+                post_update(
+                    ticker=daoTicker,
+                    propID=checkProposalID, 
+                    title=title, 
+                    description="", # for discord embeds
+                    isDAO=True,
+                    DAOVoteLink=f"{token['vote']}/{checkProposalID}" # https://www.rawdao.zone/vote/#
+                )
+            
+            if IS_FIRST_RUN or IN_PRODUCTION:      
+                # save to proposals dict & to file (so we don't post again), unless its the first run                                 
+                update_proposal_value(daoTicker, checkProposalID)
+            else:
+                print("DAO: Not in production, not writing to file.")
+            lastProposal += 1    
+
+        else:
+            break # this proposal does not exists yet, end while loop
+
 
 def checkIfNewestProposalIDIsGreaterThanLastTweet(ticker):
     # get our last tweeted proposal ID (that was in voting period), if it exists
@@ -275,6 +324,18 @@ def runChecks():
             checkIfNewestProposalIDIsGreaterThanLastTweet(chain)
         except Exception as e:
             print(f"{chain} checkProp failed: {e}")
+
+
+    # loop through DAOs
+    for dao in DAOs.keys():
+        try:
+            if dao not in TICKERS_TO_ANNOUNCE and TICKERS_TO_ANNOUNCE != []:
+                continue
+
+            checkIfNewerDAOProposalIsOut(dao)
+        except:
+            print(f"{dao} checkProp failed")
+
     logRun()
     print(f"All chains checked {time.ctime()}, waiting")
 
