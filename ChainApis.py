@@ -20,6 +20,15 @@ customExplorerLinks = {
     "dig": "https://app.digchain.org/proposals",
 }
 
+DAOs = { # Juno DAO_DAO Chains here
+    "raw": {
+        "name": "RAW DAO",
+        "json": "https://www.rawdao.zone/_next/data/bR3nqrKPn0Epi1p-AkTpX/vote", # get from inspect element on chain-website.xyz/vote (Will be like "2.json" name for example)
+        "vote": "https://www.rawdao.zone/vote",
+        "twitter": "@raw_dao",
+    }
+}
+
 # Defined all info needed for given tickers. If only 1 explorer is found, that one will be used
 # no matter what explorer is defined in GovBot
 chainAPIs = {
