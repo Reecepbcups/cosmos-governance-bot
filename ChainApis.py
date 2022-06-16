@@ -18,6 +18,7 @@ Custom links will only be used if true in the GovBot file
 # Define custom explorer links, useful when a chain has its own proposals page
 customExplorerLinks = {
     "dig": "https://app.digchain.org/proposals",
+    "terra": "https://station.terra.money/proposal",
 }
 
 DAOs = { # Juno DAO_DAO Chains here
@@ -258,10 +259,17 @@ chainAPIs = {
         },        
         "@sifchain"
         ],
-    "terra": [  
+    "terraC": [  
         'https://blockdaemon-terra-lcd.api.bdnodes.net:1317/cosmos/gov/v1beta1/proposals',
         {
             "ping": 'https://ping.pub/terra-luna/gov',
+        },        
+        "@terraC_money"
+        ],
+    "terra": [  
+        'https://phoenix-lcd.terra.dev/cosmos/gov/v1beta1/proposals',
+        {
+            "ping": 'https://ping.pub/terra2/gov',
         },        
         "@terra_money"
         ],
