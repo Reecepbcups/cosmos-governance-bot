@@ -45,6 +45,7 @@ chainAPIs = {
         {
             "ping": 'https://ping.pub/juno/gov',
             "mintscan": 'https://www.mintscan.io/juno/proposals',
+            "keplr": 'https://wallet.keplr.app/#/juno/governance?detailId='
         },
         "@JunoNetwork"
         ],
@@ -61,6 +62,7 @@ chainAPIs = {
         {
             # "ping": 'https://ping.pub/osmosis/gov',
             "mintscan": 'https://www.mintscan.io/osmosis/proposals',
+            "keplr": 'https://wallet.keplr.app/#/osmosis/governance?detailId='
         },
         '@osmosiszone'
         ],
@@ -77,6 +79,7 @@ chainAPIs = {
         {
             "ping": 'https://ping.pub/akash-network/gov',
             "mintscan": 'https://www.mintscan.io/akash/proposals',
+            "keplr": 'https://wallet.keplr.app/#/akashnet/governance?detailId='
         },
         '@akashnet_'
         ],
@@ -84,6 +87,7 @@ chainAPIs = {
         "https://rest.stargaze-apis.com/cosmos/gov/v1beta1/proposals",
         {
             "ping": 'https://ping.pub/stargaze/gov',
+            "keplr": 'https://wallet.keplr.app/#/stargaze/governance?detailId='
         },        
         '@StargazeZone'
         ],
@@ -92,6 +96,7 @@ chainAPIs = {
         {
             "ping": 'https://ping.pub/kava/gov',
             "mintscan": 'https://www.mintscan.io/kava/proposals',
+            "keplr": 'https://wallet.keplr.app/#/kava/governance?detailId='
         },        
         '@kava_platform'
         ],
@@ -161,6 +166,7 @@ chainAPIs = {
         {
             "ping": 'https://ping.pub/crypto-com-chain/gov',
             "mintscan": 'https://www.mintscan.io/crypto-org/proposals',
+            "keplr": 'https://wallet.keplr.app/#/crypto-org/governance?detailId='
         },        
         '@cryptocom'
         ],
@@ -169,6 +175,7 @@ chainAPIs = {
         {
             "ping": 'https://ping.pub/evmos/gov',
             "mintscan": 'https://www.mintscan.io/evmos/proposals',
+            "keplr": 'https://wallet.keplr.app/#/evmos/governance?detailId='
         },        
         '@EvmosOrg'
         ],
@@ -185,6 +192,7 @@ chainAPIs = {
         {
             "ping": 'https://ping.pub/gravity-bridge/gov',
             "mintscan": 'https://www.mintscan.io/gravity-bridge/proposals',
+            "keplr": 'https://wallet.keplr.app/#/gravity-bridge/governance?detailId='
         },        
         '@gravity_bridge'
         ],
@@ -201,6 +209,7 @@ chainAPIs = {
         {
             "ping": 'https://ping.pub/iris-network/gov',
             "mintscan": 'https://www.mintscan.io/iris/proposals',
+            "keplr": 'https://wallet.keplr.app/#/irishub/governance?detailId='
         },        
         '@irisnetwork'
         ],
@@ -225,6 +234,7 @@ chainAPIs = {
         {
             "ping": 'https://ping.pub/regen/gov',
             "mintscan": 'https://www.mintscan.io/regen/proposals',
+            "keplr": 'https://wallet.keplr.app/#/regen/governance?detailId='
         },        
         '@regen_network'
         ],
@@ -240,6 +250,7 @@ chainAPIs = {
         {
             "ping": 'https://ping.pub/secret/gov',
             "mintscan": 'https://www.mintscan.io/secret/proposals',
+            "keplr": 'https://wallet.keplr.app/#/secret/governance?detailId='
         },        
         '@SecretNetwork'
         ],
@@ -256,6 +267,7 @@ chainAPIs = {
         {
             "ping": 'https://ping.pub/sifchain/gov',
             "mintscan": 'https://www.mintscan.io/sifchain/proposals',
+            "keplr": 'https://wallet.keplr.app/#/sifchain/governance?detailId='
         },        
         "@sifchain"
         ],

@@ -28,14 +28,14 @@ from ChainApis import chainAPIs, customExplorerLinks, DAOs
 
 # When true, will actually tweet / discord post
 IN_PRODUCTION = True
-DISCORD = True
-DISCORD_THREADS_AND_REACTIONS = True
-TWITTER = False
+TWITTER = True
+DISCORD = False
+DISCORD_THREADS_AND_REACTIONS = False
 # If false, it is up to you to schedule via crontab -e such as: */30 * * * * cd /root/twitterGovBot && python3 twitterGovernanceBot.py
 USE_PYTHON_RUNNABLE = False
 LOG_RUNS = False
 
-explorer = "mintscan" # ping or mintscan
+explorer = "keplr" # ping, mintscan, keplr
 
 USE_CUSTOM_LINKS = True
 if USE_CUSTOM_LINKS:
@@ -177,13 +177,18 @@ def get_explorer_link(ticker, propId):
     if ticker in customLinks:
         return f"{customLinks[ticker]}/{propId}"
 
+    # pingpub, mintscan, keplr
     possibleExplorers = chainAPIs[ticker][1]
 
     explorerToUse = explorer
     if explorerToUse not in possibleExplorers: # If it doesn't have a mintscan, default to ping.pub (index 0)
         explorerToUse = list(possibleExplorers.keys())[0]
 
-    return f"{chainAPIs[ticker][1][explorerToUse]}/{propId}"
+    if explorerToUse == "keplr":
+        # https://wallet.keplr.app/#/gravity-bridge/governance?detailId={propid}
+        return f"{chainAPIs[ticker][1][explorerToUse]}{propId}"
+    else:
+        return f"{chainAPIs[ticker][1][explorerToUse]}/{propId}"
 
 # This is so messy, make this more OOP related
 def post_update(ticker, propID, title, description="", isDAO=False, DAOVoteLink=""):
