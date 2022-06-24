@@ -350,13 +350,13 @@ def logRun():
 
 def runChecks():   
     print("Running checks...") 
-    # for chain in chainAPIs.keys():
-    #     try:
-    #         if chain not in TICKERS_TO_ANNOUNCE and TICKERS_TO_ANNOUNCE != []:
-    #             continue
-    #         checkIfNewestProposalIDIsGreaterThanLastTweet(chain)
-    #     except Exception as e:
-    #         print(f"{chain} checkProp failed: {e}")
+    for chain in chainAPIs.keys():
+        try:
+            if chain not in TICKERS_TO_ANNOUNCE and TICKERS_TO_ANNOUNCE != []:
+                continue
+            checkIfNewestProposalIDIsGreaterThanLastTweet(chain)
+        except Exception as e:
+            print(f"{chain} checkProp failed: {e}")
 
 
     # loop through DAOs
