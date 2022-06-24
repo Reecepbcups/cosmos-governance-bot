@@ -44,6 +44,7 @@ if USE_CUSTOM_LINKS:
 # Don't touch below --------------------------------------------------
 
 proposals = {}
+proposals_dao = {}
 TICKERS_TO_ANNOUNCE = []
 DISCORD_API = "https://discord.com/api/v9"
 IS_FIRST_RUN = False
@@ -54,6 +55,7 @@ with open('secrets.json', 'r') as f:
 
     TICKERS_TO_ANNOUNCE = secrets['TICKERS_TO_ANNOUNCE']
     filename = secrets['FILENAME']
+    filename_dao = 'chains_dao.json'
 
     if TWITTER:
         twitSecrets = secrets['TWITTER']
@@ -86,21 +88,38 @@ with open('secrets.json', 'r') as f:
                 "authorization": "Bot " + BOT_TOKEN,    
             }
 
+# Loads normal proposals (ticker -> id) dict
 def load_proposals_from_file() -> dict:
     global proposals
     with open(filename, 'r') as f:
-        proposals = json.load(f)        
+        proposals = json.load(f)       
     return proposals
-
 def save_proposals() -> None:
     if len(proposals) > 0:
         with open(filename, 'w') as f:
             json.dump(proposals, f)
-
 def update_proposal_value(ticker, newPropNumber):
     global proposals
     proposals[ticker] = newPropNumber
     save_proposals()
+
+# dao based, i know this is messy
+def load_dao_proposals_from_file() -> dict:
+    global proposals_dao
+    with open(filename_dao, 'r') as f:
+        proposals_dao = json.load(f)       
+    return proposals_dao
+def save_dao_proposals() -> None:
+    if len(proposals_dao) > 0:
+        with open(filename_dao, 'w') as f:
+            json.dump(proposals_dao, f, indent=2)
+def update_dao_proposal_value(ticker, propTitle):
+    global proposals_dao 
+    # Since DAODAO reverses ids, we check titles to check for duplicates via title.
+    # I use to have it with {key: [titles...]} but was too complex IMO. Just title should be enough
+    proposals_dao[ticker].append(propTitle)
+    save_dao_proposals()
+#
 
 def _SetMaxArchiveDurationLength() -> int:
     global THREAD_ARCHIVE_MINUTES
@@ -200,12 +219,10 @@ def post_update(ticker, propID, title, description="", isDAO=False, DAOVoteLink=
     twitterAt = ""
 
     if isDAO == True:
-        message = message.replace(f" | {title}", "") # removes the title since DAO's dont have this function yet
         if "twitter" in DAOs[ticker]:
             twitterAt = DAOs[ticker]["twitter"]
     else:
         twitterAt = chainAPIs[ticker][2] # @'s blockchains official twitter
-
     
     if len(twitterAt) > 1:
         twitterAt = f'@{twitterAt}' if not twitterAt.startswith('@') else twitterAt
@@ -247,47 +264,50 @@ def getAllProposals(ticker) -> list:
 def checkIfNewerDAOProposalIsOut(daoTicker):
     print(f"Checking if new DAO proposal is out for {daoTicker}")
     # https://rest-juno.ecostake.com/cosmwasm/wasm/v1/contract/juno1eqfqxc2ff6ywf8t278ls3h3rdk7urmawyrthagl6dyac29r7c5vqtu0zlf/smart/eyJsaXN0X3Byb3Bvc2FscyI6e319?encoding=base64
-    lastPropID = 0
     token = DAOs[daoTicker]
-    if daoTicker in proposals:
-        lastPropID = int(proposals[daoTicker])
-
-    print(f"Last prop ID for {daoTicker}: {lastPropID}")
-
     props = requests.get(f"{token['proposals']}").json()['data']['proposals']
+
     for prop in props:
         current_prop_id = int(prop['id'])
+        current_id_str = str(current_prop_id)
         # print(f"{daoTicker} | {current_prop_id}")
 
-        if current_prop_id > lastPropID:
-            # print(f"New DAO proposal found: {current_prop_id}")
+        proposal_title = prop['proposal']['title']
+        proposer = prop['proposal']['proposer']
 
-            title = prop['proposal']['title']
-            proposer = prop['proposal']['proposer']
-            status = prop['proposal']['status']
+        status = prop['proposal']['status']
+        if status != "open": # executed, or maybe no deposit yet.
+            # print(f"Proposal {current_prop_id} is not open for voting yet, skipping")
+            continue
 
-            if status != "open": # executed, or maybe no deposit yet?
-                # print(f"Proposal {current_prop_id} is not open for voting yet, skipping")
-                continue
+        if daoTicker not in list(proposals_dao.keys()):
+            proposals_dao[daoTicker] = []#; print('token not in dict, adding')
 
-            if IS_FIRST_RUN == False: # we only write DAO proposals to discord / twitter when its not the first run or it would spam ALL proposals on start
-                # print(f"Proposal {current_prop_id} exists")
-                # Announce it as live
-                title = f"{token['name']} Proposal #{current_prop_id}"
-                post_update(
-                    ticker=daoTicker,
-                    propID=current_prop_id, 
-                    title=title, 
-                    description=f"from {proposer}", # for discord embeds
-                    isDAO=True,
-                    DAOVoteLink=f"{token['vote']}/{current_prop_id}" # https://www.rawdao.zone/vote/#
-                )
+        # check if this proposal has been submited before based on the title.
+        if proposal_title in list(proposals_dao[daoTicker]):
+            print(f"Proposal {current_prop_id} was already posted for this title before, skipping")
+            continue
 
-            if IS_FIRST_RUN or IN_PRODUCTION:      
-                # save to proposals dict & to file (so we don't post again), unless its the first run                                 
-                update_proposal_value(daoTicker, current_prop_id)
-            else:
-                print("DAO: Not in production, not writing to file.")
+        print(f"{daoTicker} has not been posted before as: {current_prop_id} | {proposal_title}")
+
+        if IS_FIRST_RUN == False: # we only write DAO proposals to discord / twitter when its not the first run or it would spam ALL proposals on start
+            # print(f"Proposal {current_prop_id} exists")
+            # Announce it as live
+            # title = f"{token['name']} Proposal #{current_prop_id}"
+            post_update(
+                ticker=daoTicker,
+                propID=current_prop_id, 
+                title=proposal_title, 
+                description=f"from {proposer}", # for discord embeds
+                isDAO=True,
+                DAOVoteLink=f"{token['vote']}/{current_prop_id}" # https://www.rawdao.zone/vote/#
+            )
+
+        if IS_FIRST_RUN or IN_PRODUCTION:      
+            # save to proposals dict & to file (so we don't post again), unless its the first run                                 
+            update_dao_proposal_value(daoTicker, proposal_title)
+        else:
+            print("DAO: Not in production, not writing to file.")
 
 
 def checkIfNewestProposalIDIsGreaterThanLastTweet(ticker):
@@ -330,14 +350,13 @@ def logRun():
 
 def runChecks():   
     print("Running checks...") 
-    for chain in chainAPIs.keys():
-        try:
-            if chain not in TICKERS_TO_ANNOUNCE and TICKERS_TO_ANNOUNCE != []:
-                continue
-
-            checkIfNewestProposalIDIsGreaterThanLastTweet(chain)
-        except Exception as e:
-            print(f"{chain} checkProp failed: {e}")
+    # for chain in chainAPIs.keys():
+    #     try:
+    #         if chain not in TICKERS_TO_ANNOUNCE and TICKERS_TO_ANNOUNCE != []:
+    #             continue
+    #         checkIfNewestProposalIDIsGreaterThanLastTweet(chain)
+    #     except Exception as e:
+    #         print(f"{chain} checkProp failed: {e}")
 
 
     # loop through DAOs
@@ -345,7 +364,6 @@ def runChecks():
         try:
             if dao not in TICKERS_TO_ANNOUNCE and TICKERS_TO_ANNOUNCE != []:
                 continue
-
             checkIfNewerDAOProposalIsOut(dao)
         except Exception as e:
             print(f"{dao} checkProp failed {e}")
@@ -360,7 +378,7 @@ def updateChainsToNewestProposalsIfThisIsTheFirstTimeRunning():
     Updates JSON file to the newest proposals provided this is the first time running
     '''
     if os.path.exists(filename):
-        print(f"{filename} exists, not updating")
+        print(f"{filename} exists, not first run")
         return
 
     IS_FIRST_RUN = True
@@ -377,6 +395,7 @@ if __name__ == "__main__":
     updateChainsToNewestProposalsIfThisIsTheFirstTimeRunning()
 
     load_proposals_from_file()    
+    load_dao_proposals_from_file()
     _SetMaxArchiveDurationLength()
 
     # informs user & setups of legnth of time between runs
