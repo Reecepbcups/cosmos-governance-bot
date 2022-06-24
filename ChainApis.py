@@ -21,10 +21,11 @@ customExplorerLinks = {
     "terra": "https://station.terra.money/proposal",
 }
 
+JUNO_REST_API = "https://rest-juno.ecostake.com/cosmwasm/wasm/v1/contract/"
 DAOs = { # Juno DAO_DAO Chains here
     "raw": {
         "name": "RAW DAO",
-        "json": "https://www.rawdao.zone/_next/data/C_gSpGvAyha6p1tAPhVkh/vote", # get from inspect element on chain-website.xyz/vote (Will be like "2.json" name for example)
+        "proposals": f"{JUNO_REST_API}/juno1eqfqxc2ff6ywf8t278ls3h3rdk7urmawyrthagl6dyac29r7c5vqtu0zlf/smart/eyJsaXN0X3Byb3Bvc2FscyI6e319?encoding=base64",
         "vote": "https://www.rawdao.zone/vote",
         "twitter": "@raw_dao",
     }
