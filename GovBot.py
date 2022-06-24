@@ -245,40 +245,49 @@ def getAllProposals(ticker) -> list:
     return props
 
 def checkIfNewerDAOProposalIsOut(daoTicker):
-    lastProposal = 0
-    if daoTicker in proposals:
-        lastProposal = int(proposals[daoTicker])
-
+    print(f"Checking if new DAO proposal is out for {daoTicker}")
+    # https://rest-juno.ecostake.com/cosmwasm/wasm/v1/contract/juno1eqfqxc2ff6ywf8t278ls3h3rdk7urmawyrthagl6dyac29r7c5vqtu0zlf/smart/eyJsaXN0X3Byb3Bvc2FscyI6e319?encoding=base64
+    lastPropID = 0
     token = DAOs[daoTicker]
-    while True:        
-        checkProposalID = lastProposal + 1 # We want to check next proposal past confirmed, so if it was 0 (never) = check 1
+    if daoTicker in proposals:
+        lastPropID = int(proposals[daoTicker])
 
-        r = requests.get(f"{token['json']}/{checkProposalID}.json").json() # get the JSON static page
-        # print(r)
-        if r['pageProps']['innerProps']['exists']: # If this is true, this is a proposal
+    print(f"Last prop ID for {daoTicker}: {lastPropID}")
+
+    props = requests.get(f"{token['proposals']}").json()['data']['proposals']
+    for prop in props:
+        current_prop_id = int(prop['id'])
+        # print(f"{daoTicker} | {current_prop_id}")
+
+        if current_prop_id > lastPropID:
+            # print(f"New DAO proposal found: {current_prop_id}")
+
+            title = prop['proposal']['title']
+            proposer = prop['proposal']['proposer']
+            status = prop['proposal']['status']
+
+            if status != "open": # executed, or maybe no deposit yet?
+                # print(f"Proposal {current_prop_id} is not open for voting yet, skipping")
+                continue
 
             if IS_FIRST_RUN == False: # we only write DAO proposals to discord / twitter when its not the first run or it would spam ALL proposals on start
-                print(f"Proposal {checkProposalID} exists")
+                # print(f"Proposal {current_prop_id} exists")
                 # Announce it as live
-                title = f"{token['name']} Proposal #{checkProposalID}"
+                title = f"{token['name']} Proposal #{current_prop_id}"
                 post_update(
                     ticker=daoTicker,
-                    propID=checkProposalID, 
+                    propID=current_prop_id, 
                     title=title, 
-                    description="", # for discord embeds
+                    description=f"from {proposer}", # for discord embeds
                     isDAO=True,
-                    DAOVoteLink=f"{token['vote']}/{checkProposalID}" # https://www.rawdao.zone/vote/#
+                    DAOVoteLink=f"{token['vote']}/{current_prop_id}" # https://www.rawdao.zone/vote/#
                 )
-            
+
             if IS_FIRST_RUN or IN_PRODUCTION:      
                 # save to proposals dict & to file (so we don't post again), unless its the first run                                 
-                update_proposal_value(daoTicker, checkProposalID)
+                update_proposal_value(daoTicker, current_prop_id)
             else:
                 print("DAO: Not in production, not writing to file.")
-            lastProposal += 1    
-
-        else:
-            break # this proposal does not exists yet, end while loop
 
 
 def checkIfNewestProposalIDIsGreaterThanLastTweet(ticker):
@@ -338,8 +347,8 @@ def runChecks():
                 continue
 
             checkIfNewerDAOProposalIsOut(dao)
-        except:
-            print(f"{dao} checkProp failed")
+        except Exception as e:
+            print(f"{dao} checkProp failed {e}")
 
     logRun()
     print(f"All chains checked {time.ctime()}, waiting")
