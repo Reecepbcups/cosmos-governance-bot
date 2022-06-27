@@ -28,7 +28,7 @@ from ChainApis import chainAPIs, customExplorerLinks, DAOs
 
 # When true, will actually tweet / discord post
 IN_PRODUCTION = True
-TWITTER = True
+TWITTER = False
 DISCORD = False
 DISCORD_THREADS_AND_REACTIONS = False
 # If false, it is up to you to schedule via crontab -e such as: */30 * * * * cd /root/twitterGovBot && python3 twitterGovernanceBot.py
@@ -45,7 +45,6 @@ if USE_CUSTOM_LINKS:
 
 proposals = {}
 proposals_dao = {}
-TICKERS_TO_ANNOUNCE = []
 DISCORD_API = "https://discord.com/api/v9"
 IS_FIRST_RUN = False
 BOOSTED_DISCORD_THREAD_TIME_TIERS = {0: 1440,1: 4320,2: 10080,3: 10080}
@@ -53,7 +52,10 @@ BOOSTED_DISCORD_THREAD_TIME_TIERS = {0: 1440,1: 4320,2: 10080,3: 10080}
 with open('secrets.json', 'r') as f:
     secrets = json.load(f)
 
-    TICKERS_TO_ANNOUNCE = secrets['TICKERS_TO_ANNOUNCE']
+    TICKERS_TO_ANNOUNCE = secrets.get('TICKERS_TO_ANNOUNCE', [])
+    TICKERS_TO_IGNORE = secrets.get('TICKERS_TO_IGNORE', [])
+    # print(f"Ignoring: {TICKERS_TO_IGNORE}")
+
     filename = secrets['FILENAME']
     filename_dao = 'chains_dao.json'
 
@@ -352,8 +354,11 @@ def runChecks():
     print("Running checks...") 
     for chain in chainAPIs.keys():
         try:
-            if chain not in TICKERS_TO_ANNOUNCE and TICKERS_TO_ANNOUNCE != []:
+            if  len(TICKERS_TO_ANNOUNCE) > 0 and chain not in TICKERS_TO_ANNOUNCE:
                 continue
+            if len(TICKERS_TO_IGNORE) > 0 and chain in TICKERS_TO_IGNORE:
+                # print(f"Ignoring {chain} as it is in the ignore list.")
+                continue # ignore chains like terra we don't want to announce
             checkIfNewestProposalIDIsGreaterThanLastTweet(chain)
         except Exception as e:
             print(f"{chain} checkProp failed: {e}")
