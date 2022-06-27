@@ -61,7 +61,7 @@ chainAPIs = {
     'osmo': [
         'https://lcd-osmosis.blockapsis.com/cosmos/gov/v1beta1/proposals',
         {
-            # "ping": 'https://ping.pub/osmosis/gov',
+            "ping": 'https://ping.pub/osmosis/gov',
             "mintscan": 'https://www.mintscan.io/osmosis/proposals',
             "keplr": 'https://wallet.keplr.app/#/osmosis/governance?detailId='
         },
@@ -72,6 +72,7 @@ chainAPIs = {
         {
             "ping": 'https://ping.pub/cosmos/gov',
             "mintscan": 'https://www.mintscan.io/cosmos/proposals',
+            "keplr": 'https://wallet.keplr.app/#/cosmoshub/governance?detailId='
         },
         "@cosmos"
         ],
@@ -88,6 +89,7 @@ chainAPIs = {
         "https://rest.stargaze-apis.com/cosmos/gov/v1beta1/proposals",
         {
             "ping": 'https://ping.pub/stargaze/gov',
+            "mintscan": 'https://www.mintscan.io/stargaze/proposals',
             "keplr": 'https://wallet.keplr.app/#/stargaze/governance?detailId='
         },        
         '@StargazeZone'
