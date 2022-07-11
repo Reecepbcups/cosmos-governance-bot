@@ -19,6 +19,7 @@ Custom links will only be used if true in the GovBot file
 customExplorerLinks = {
     "dig": "https://app.digchain.org/proposals",
     "terra": "https://station.terra.money/proposal",
+    # "kuji": "https://kujira.explorers.guru/proposal",
 }
 
 JUNO_REST_API = "https://rest-juno.ecostake.com/cosmwasm/wasm/v1/contract/"
@@ -271,6 +272,13 @@ chainAPIs = {
             "ping": 'https://ping.pub/sifchain/gov',
             "mintscan": 'https://www.mintscan.io/sifchain/proposals',
             "keplr": 'https://wallet.keplr.app/#/sifchain/governance?detailId='
+        },        
+        "@sifchain"
+        ],
+    "kuji": [  
+        'https://kujira-api.polkachu.com/cosmos/gov/v1beta1/proposals',
+        {
+            "ping": 'https://explorer.chaintools.tech/kujira/gov',
         },        
         "@sifchain"
         ],
