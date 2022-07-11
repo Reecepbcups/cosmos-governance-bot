@@ -280,7 +280,7 @@ chainAPIs = {
         {
             "ping": 'https://explorer.chaintools.tech/kujira/gov',
         },        
-        "@sifchain"
+        "@TeamKujira"
         ],
     "terraC": [  
         'https://blockdaemon-terra-lcd.api.bdnodes.net:1317/cosmos/gov/v1beta1/proposals',
