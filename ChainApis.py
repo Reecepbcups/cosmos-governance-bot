@@ -19,6 +19,7 @@ Custom links will only be used if true in the GovBot file
 customExplorerLinks = {
     "dig": "https://app.digchain.org/proposals",
     "terra": "https://station.terra.money/proposal",
+    # "kuji": "https://kujira.explorers.guru/proposal",
 }
 
 JUNO_REST_API = "https://rest-juno.ecostake.com/cosmwasm/wasm/v1/contract/"
