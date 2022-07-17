@@ -44,7 +44,6 @@ if USE_CUSTOM_LINKS:
 # Don't touch below --------------------------------------------------
 
 proposals = {}
-proposals_dao = {}
 DISCORD_API = "https://discord.com/api/v9"
 IS_FIRST_RUN = False
 BOOSTED_DISCORD_THREAD_TIME_TIERS = {0: 1440,1: 4320,2: 10080,3: 10080}
@@ -76,7 +75,7 @@ with open('secrets.json', 'r') as f:
         USERNAME = discSecrets['USERNAME']
         AVATAR_URL = discSecrets['AVATAR_URL']
         HEX_COLOR = int(discSecrets['HEX_COLOR'], 16)
-        READACTION_RATE_LIMIT = 0.1
+        REACTION_RATE_LIMIT = 0.1
 
         if DISCORD_THREADS_AND_REACTIONS:
             discTreads = secrets['DISCORD_THREADS']
@@ -100,27 +99,10 @@ def save_proposals() -> None:
     if len(proposals) > 0:
         with open(filename, 'w') as f:
             json.dump(proposals, f)
-def update_proposal_value(ticker, newPropNumber):
+def update_proposal_value(ticker: str, newPropNumber: int):
     global proposals
     proposals[ticker] = newPropNumber
     save_proposals()
-
-# dao based, i know this is messy
-def load_dao_proposals_from_file() -> dict:
-    global proposals_dao
-    with open(filename_dao, 'r') as f:
-        proposals_dao = json.load(f)       
-    return proposals_dao
-def save_dao_proposals() -> None:
-    if len(proposals_dao) > 0:
-        with open(filename_dao, 'w') as f:
-            json.dump(proposals_dao, f, indent=2)
-def update_dao_proposal_value(ticker, propTitle):
-    global proposals_dao 
-    # Since DAODAO reverses ids, we check titles to check for duplicates via title.
-    # I use to have it with {key: [titles...]} but was too complex IMO. Just title should be enough
-    proposals_dao[ticker].append(propTitle)
-    save_dao_proposals()
 #
 
 def _SetMaxArchiveDurationLength() -> int:
@@ -188,11 +170,11 @@ def discord_add_reacts(message_id): # needs READ_MESSAGE_HISTORY & ADD_REACTIONS
     # https://discord.com/developers/docs/resources/channel#create-reaction
     # https://discord.com/developers/docs/resources/emoji    
     for emoji in ["✅", "❌", "⭕", "🚫"]:
-        # print("PUT request for emoji: " + emoji) # DEBUGIN
+        # print("PUT request for emoji: " + emoji) # DEBUGGING
         r = requests.put(f"{DISCORD_API}/channels/{CHANNEL_ID}/messages/{message_id}/reactions/{emoji}/@me", headers=BOT_TOKEN_HEADERS_FOR_API)
         if r.text != "":
             print(r.text)
-        time.sleep(READACTION_RATE_LIMIT) # rate limit
+        time.sleep(REACTION_RATE_LIMIT) # rate limit
 
 def get_explorer_link(ticker, propId):
     if ticker in customLinks:
@@ -283,12 +265,12 @@ def checkIfNewerDAOProposalIsOut(daoTicker):
             # print(f"Proposal {current_prop_id} is not open for voting yet, skipping")
             continue
 
-        if daoTicker not in list(proposals_dao.keys()):
-            proposals_dao[daoTicker] = []#; print('token not in dict, adding')
+        if daoTicker not in list(proposals.keys()):
+            proposals[daoTicker] = 0 #; print('token not in dict, adding')
 
-        # check if this proposal has been submited before based on the title.
-        if proposal_title in list(proposals_dao[daoTicker]):
-            print(f"Proposal {current_prop_id} was already posted for this title before, skipping")
+        # check if this proposal has been submitted before based on the # id
+        if current_prop_id <= proposals[daoTicker]:
+            print(f"Proposal {current_prop_id} was already posted for this id ({current_prop_id})")
             continue
 
         print(f"{daoTicker} has not been posted before as: {current_prop_id} | {proposal_title}")
@@ -308,7 +290,7 @@ def checkIfNewerDAOProposalIsOut(daoTicker):
 
         if IS_FIRST_RUN or IN_PRODUCTION:      
             # save to proposals dict & to file (so we don't post again), unless its the first run                                 
-            update_dao_proposal_value(daoTicker, proposal_title)
+            update_proposal_value(daoTicker, current_prop_id)
         else:
             print("DAO: Not in production, not writing to file.")
 
@@ -360,6 +342,7 @@ def runChecks():
             if len(TICKERS_TO_IGNORE) > 0 and chain in TICKERS_TO_IGNORE:
                 # print(f"Ignoring {chain} as it is in the ignore list.")
                 continue # ignore chains like terra we don't want to announce
+
             checkIfNewestProposalIDIsGreaterThanLastTweet(chain)
         except Exception as e:
             print(f"{chain} checkProp failed: {e}")
@@ -401,10 +384,9 @@ if __name__ == "__main__":
     updateChainsToNewestProposalsIfThisIsTheFirstTimeRunning()
 
     load_proposals_from_file()    
-    load_dao_proposals_from_file()
     _SetMaxArchiveDurationLength()
 
-    # informs user & setups of legnth of time between runs
+    # informs user & setups of length of time between runs
     if IN_PRODUCTION:
         SCHEDULE_SECONDS = 30*60
         print("[!] BOT IS RUNNING IN PRODUCTION MODE!!!!!!!!!!!!!!!!!!")
