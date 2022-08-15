@@ -50,6 +50,13 @@ DISCORD_API = "https://discord.com/api/v9"
 IS_FIRST_RUN = False
 BOOSTED_DISCORD_THREAD_TIME_TIERS = {0: 1440,1: 4320,2: 10080,3: 10080}
 
+# check if secrets.json exist
+if not os.path.isfile("secrets.json"):
+    print("\nsecrets.json not found, please create it like so:")
+    print("cp secrets.example.json secrets.json\n")
+    exit()
+
+PREFIX="COSMOSGOV"
 with open('secrets.json', 'r') as f:
     secrets = json.load(f)
 
@@ -59,13 +66,14 @@ with open('secrets.json', 'r') as f:
 
     filename = secrets['FILENAME']
     filename_dao = 'chains_dao.json'
-
+    
+    # print(f"\nOS ENV: {os.environ}")
     if TWITTER:
         twitSecrets = secrets['TWITTER']
-        APIKEY = twitSecrets['APIKEY']
-        APIKEYSECRET = twitSecrets['APIKEYSECRET']
-        ACCESS_TOKEN = twitSecrets['ACCESS_TOKEN']
-        ACCESS_TOKEN_SECRET = twitSecrets['ACCESS_TOKEN_SECRET']  
+        APIKEY = os.getenv(f"{PREFIX}_TWITTER_APIKEY", twitSecrets['APIKEY'])
+        APIKEYSECRET = os.getenv(f"{PREFIX}_TWITTER_APIKEYSECRET", twitSecrets['APIKEYSECRET'])
+        ACCESS_TOKEN = os.getenv(f"{PREFIX}_TWITTER_ACCESS_TOKENT", twitSecrets['ACCESS_TOKEN'])
+        ACCESS_TOKEN_SECRET = os.getenv(f"{PREFIX}_TWITTER_ACCESS_TOKEN_SECRET", twitSecrets['ACCESS_TOKEN_SECRET'])
         # Authenticate to Twitter & Get API
         auth = tweepy.OAuth1UserHandler(APIKEY, APIKEYSECRET)
         auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
@@ -74,10 +82,10 @@ with open('secrets.json', 'r') as f:
     if DISCORD:
         discSecrets = secrets['DISCORD']
         # print(discSecrets)
-        WEBHOOK_URL = discSecrets['WEBHOOK_URL']
-        USERNAME = discSecrets['USERNAME']
-        AVATAR_URL = discSecrets['AVATAR_URL']
-        HEX_COLOR = int(discSecrets['HEX_COLOR'], 16)
+        WEBHOOK_URL = os.getenv(f"{PREFIX}_DISCORD_WEBHOOK_URL", discSecrets['WEBHOOK_URL'])
+        USERNAME = os.getenv(f"{PREFIX}_DISCORD_USERNAME", discSecrets['USERNAME'])
+        AVATAR_URL = os.getenv(f"{PREFIX}_DISCORD_AVATAR_URL", discSecrets['AVATAR_URL'])
+        HEX_COLOR = int(os.getenv(f"{PREFIX}_DISCORD_HEX_COLOR", discSecrets['HEX_COLOR']), 16)        
         REACTION_RATE_LIMIT = 0.1
 
         if DISCORD_THREADS_AND_REACTIONS:

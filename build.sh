@@ -1,0 +1,1 @@
+sudo docker build -t cosmos-gov-bot:2.0.0 .
