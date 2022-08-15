@@ -19,6 +19,8 @@ DIG, DVPN, KAVA, LIKE, XPRT, BCNA, BITSONG, BOSTROM, CHEQD, PB, SIF, UMEE, Starn
 
 # Configuration
 ```bash
+git clone https://github.com/Reecepbcups/cosmos-governance-bot.git
+cd cosmos-governance-bot
 
 cp secrets.example.json secrets.json
 
@@ -28,11 +30,10 @@ cp secrets.example.json secrets.json
 #2) If you want to allow all tickers to be announced, leave TICKERS_TO_ANNOUNCE as `[]`
 # *To specify tickers, add them in a list as `["dig","osmo","huahua"]` matching tickers in the cosmpy_chain CHAIN_APIs*
 
-3) Open the .py script and edit the following:
+#3) run 'python src/gov-bot.py'
 
-IN_PRODUCTION
-DISCORD
-TWITTER
+# if you want to run every 30 minutes, here is that crontab example:
+# */30 * * * * cd /root/cosmos-governance-bot && python src/gov-bot.py
 ```
 
 
