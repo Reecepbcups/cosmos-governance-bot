@@ -45,6 +45,8 @@ with open('secrets.json', 'r') as f:
 
     # If false, it is up to you to schedule via crontab -e such as: */30 * * * * cd /root/twitterGovBot && python3 twitterGovernanceBot.py
     USE_PYTHON_RUNNABLE = secrets['USE_PYTHON_RUNNABLE']
+    SCHEDULE_SECONDS = 60 * int(secrets['MINUTES_BETWEEN_RUNNABLE'])
+
     LOG_RUNS = secrets['LOG_RUNS']    
 
     TICKERS_TO_ANNOUNCE = secrets.get('TICKERS_TO_ANNOUNCE', [])
@@ -388,8 +390,7 @@ if __name__ == "__main__":
     _SetMaxArchiveDurationLength()
 
     # informs user & setups of length of time between runs
-    if IN_PRODUCTION:
-        SCHEDULE_SECONDS = 30*60
+    if IN_PRODUCTION:        
         print("[!] BOT IS RUNNING IN PRODUCTION MODE!!!!!!!!!!!!!!!!!!")
         time.sleep(5)
 
