@@ -11,8 +11,6 @@ python3 -m pip install requests tweepy schedule discord
 *Get REST lcd's in chain.json from https://github.com/cosmos/chain-registry
 '''
 
-import datetime
-import discord
 import json
 import os
 import requests
@@ -20,36 +18,15 @@ import schedule
 import time
 import tweepy
 
-from discord import Webhook, RequestsWebhookAdapter
-
 # from _ChainApis import chainAPIs, customExplorerLinks, DAOs
 from pyibc_api import get_chain, CHAIN_APIS, CUSTOM_EXPLORER_LINKS, PAGES, DAOs, REST_ENDPOINTS # get_dao?
 
-# == Configuration ==
-
-# When true, will actually tweet / discord post
-IN_PRODUCTION = True
-TWITTER = False
-DISCORD = True
-DISCORD_THREADS_AND_REACTIONS = False
-# If false, it is up to you to schedule via crontab -e such as: */30 * * * * cd /root/twitterGovBot && python3 twitterGovernanceBot.py
-USE_PYTHON_RUNNABLE = False
-LOG_RUNS = False
-
-explorer = "keplr" # ping, mintscan, keplr
-
-USE_CUSTOM_LINKS = True
-if USE_CUSTOM_LINKS:
-    customLinks = CUSTOM_EXPLORER_LINKS
-
 # Don't touch below --------------------------------------------------
-
 proposals = {}
 DISCORD_API = "https://discord.com/api/v9"
 IS_FIRST_RUN = False
 BOOSTED_DISCORD_THREAD_TIME_TIERS = {0: 1440,1: 4320,2: 10080,3: 10080}
 
-# check if secrets.json exist
 if not os.path.isfile("secrets.json"):
     print("\nsecrets.json not found, please create it like so:")
     print("cp secrets.example.json secrets.json\n")
@@ -58,6 +35,17 @@ if not os.path.isfile("secrets.json"):
 PREFIX="COSMOSGOV"
 with open('secrets.json', 'r') as f:
     secrets = json.load(f)
+
+    IN_PRODUCTION = secrets['IN_PRODUCTION']
+    TWITTER = secrets['TWITTER']['ENABLED']
+    DISCORD = secrets['DISCORD']['ENABLED']
+    DISCORD_THREADS_AND_REACTIONS = secrets['DISCORD_THREADS']['ENABLE_THREADS_AND_REACTIONS']
+    explorer = secrets['EXPLORER_DEFAULT'] # ping, mintscan, keplr
+    USE_CUSTOM_LINKS = secrets['USE_CUSTOM_LINKS']
+
+    # If false, it is up to you to schedule via crontab -e such as: */30 * * * * cd /root/twitterGovBot && python3 twitterGovernanceBot.py
+    USE_PYTHON_RUNNABLE = secrets['USE_PYTHON_RUNNABLE']
+    LOG_RUNS = secrets['LOG_RUNS']    
 
     TICKERS_TO_ANNOUNCE = secrets.get('TICKERS_TO_ANNOUNCE', [])
     TICKERS_TO_IGNORE = secrets.get('TICKERS_TO_IGNORE', [])
@@ -81,8 +69,7 @@ with open('secrets.json', 'r') as f:
     if DISCORD:
         discSecrets = secrets['DISCORD']
         # print(discSecrets)
-        WEBHOOK_URL = os.getenv(f"{PREFIX}_DISCORD_WEBHOOK_URL", discSecrets['WEBHOOK_URL'])
-        USERNAME = os.getenv(f"{PREFIX}_DISCORD_USERNAME", discSecrets['USERNAME'])
+        WEBHOOK_URL = os.getenv(f"{PREFIX}_DISCORD_WEBHOOK_URL", discSecrets['WEBHOOK_URL'])        
         AVATAR_URL = os.getenv(f"{PREFIX}_DISCORD_AVATAR_URL", discSecrets['AVATAR_URL'])
         HEX_COLOR = int(os.getenv(f"{PREFIX}_DISCORD_HEX_COLOR", discSecrets['HEX_COLOR']), 16)        
         REACTION_RATE_LIMIT = 0.1
@@ -90,7 +77,7 @@ with open('secrets.json', 'r') as f:
         if DISCORD_THREADS_AND_REACTIONS:
             discTreads = secrets['DISCORD_THREADS']
             CHANNEL_ID = int(discTreads['CHANNEL_ID'])
-            GUILD_ID = int(discTreads['GUILD-SERVER_ID'])
+            GUILD_ID = int(discTreads['GUILD_SERVER_ID'])
             DO_ARCHIVE_THREADS = bool(discTreads['ARCHIVE_THREADS'])
             THREAD_ARCHIVE_MINUTES = int(discTreads['THREAD_ARCHIVE_MINUTES'])
             BOT_TOKEN = discTreads['BOT_TOKEN']                 
@@ -192,7 +179,7 @@ def discord_add_reacts(message_id): # needs READ_MESSAGE_HISTORY & ADD_REACTIONS
         time.sleep(REACTION_RATE_LIMIT) # rate limit
 
 def get_explorer_link(ticker, propId):
-    if ticker in CUSTOM_EXPLORER_LINKS:
+    if USE_CUSTOM_LINKS and ticker in CUSTOM_EXPLORER_LINKS:
         return f"{CUSTOM_EXPLORER_LINKS[ticker]}/{PAGES[ticker]['gov_page'].replace('{id}', str(propId))}"
 
     # pingpub, mintscan, keplr
@@ -205,7 +192,7 @@ def get_explorer_link(ticker, propId):
         explorerToUse = list(possibleExplorers.keys())[0]
 
     url = f"{chain_info['explorers'][explorerToUse]}/{PAGES[explorerToUse]['gov_page'].replace('{id}', str(propId))}"
-    print('get_explorer_link', url)
+    # print('get_explorer_link', url)
     return url
 
 # This is so messy, make this more OOP related
@@ -327,7 +314,7 @@ def checkIfNewestProposalIDIsGreaterThanLastTweet(ticker):
 
         # If this is a new proposal which is not the last one we tweeted for
         if current_prop_id > lastPropID:   
-            print(f"Newest prop ID {current_prop_id} is greater than last prop ID {lastPropID}")
+            print(f"Newest prop ID {current_prop_id} > last prop ID: {lastPropID}")
             
             if IS_FIRST_RUN or IN_PRODUCTION:      
                 # save to proposals dict & to file (so we don't post again), unless its the first run                                 
