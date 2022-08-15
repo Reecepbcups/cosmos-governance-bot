@@ -22,14 +22,16 @@ import tweepy
 
 from discord import Webhook, RequestsWebhookAdapter
 
-from ChainApis import chainAPIs, customExplorerLinks, DAOs
+# from _ChainApis import chainAPIs, customExplorerLinks, DAOs
+
+from cosmpy_api import get_chain, CHAIN_APIS, CUSTOM_EXPLORER_LINKS, PAGES, DAOs, REST_ENDPOINTS # get_dao?
 
 # == Configuration ==
 
 # When true, will actually tweet / discord post
 IN_PRODUCTION = True
 TWITTER = False
-DISCORD = False
+DISCORD = True
 DISCORD_THREADS_AND_REACTIONS = False
 # If false, it is up to you to schedule via crontab -e such as: */30 * * * * cd /root/twitterGovBot && python3 twitterGovernanceBot.py
 USE_PYTHON_RUNNABLE = False
@@ -39,7 +41,7 @@ explorer = "keplr" # ping, mintscan, keplr
 
 USE_CUSTOM_LINKS = True
 if USE_CUSTOM_LINKS:
-    customLinks = customExplorerLinks
+    customLinks = CUSTOM_EXPLORER_LINKS
 
 # Don't touch below --------------------------------------------------
 
@@ -71,6 +73,7 @@ with open('secrets.json', 'r') as f:
 
     if DISCORD:
         discSecrets = secrets['DISCORD']
+        # print(discSecrets)
         WEBHOOK_URL = discSecrets['WEBHOOK_URL']
         USERNAME = discSecrets['USERNAME']
         AVATAR_URL = discSecrets['AVATAR_URL']
@@ -155,16 +158,21 @@ def _getLastMessageID():
     # print(res)
     return res[0]['id']
 
+from utils.notifications import discord_notification
+
 def discord_post_to_channel(ticker, propID, title, description, voteLink):
     # Auto replace description's <br> & \n ?
     if len(description) > 4096:
         description = description[:4090] + "....."
 
-    embed = discord.Embed(title=f"${str(ticker).upper()} #{propID} | {title}", description=description, timestamp=datetime.datetime.utcnow(), color=HEX_COLOR) #color=discord.Color.dark_gold()
-    embed.add_field(name="Link", value=f"{voteLink}")
-    embed.set_thumbnail(url=AVATAR_URL)
-    webhook = Webhook.from_url(WEBHOOK_URL, adapter=RequestsWebhookAdapter()) # Initializing webhook
-    webhook.send(username=USERNAME,embed=embed) # Executing webhook
+    discord_notification(
+        url=WEBHOOK_URL,
+        title=f"${str(ticker).upper()} #{propID} | {title}", 
+        description=description,
+        color=HEX_COLOR,
+        values={"vote": [voteLink, False]},
+        imageLink=AVATAR_URL,                      
+    )
 
 def discord_add_reacts(message_id): # needs READ_MESSAGE_HISTORY & ADD_REACTIONS
     # https://discord.com/developers/docs/resources/channel#create-reaction
@@ -177,22 +185,21 @@ def discord_add_reacts(message_id): # needs READ_MESSAGE_HISTORY & ADD_REACTIONS
         time.sleep(REACTION_RATE_LIMIT) # rate limit
 
 def get_explorer_link(ticker, propId):
-    if ticker in customLinks:
-        return f"{customLinks[ticker]}/{propId}"
+    if ticker in CUSTOM_EXPLORER_LINKS:
+        return f"{CUSTOM_EXPLORER_LINKS[ticker]}/{PAGES[ticker]['gov_page'].replace('{id}', str(propId))}"
 
     # pingpub, mintscan, keplr
-    possibleExplorers = chainAPIs[ticker][1]
+    # possibleExplorers = chainAPIs[ticker][1]
+    chain_info = get_chain(ticker)
+    possibleExplorers = chain_info['explorers']
 
     explorerToUse = explorer
     if explorerToUse not in possibleExplorers: # If it doesn't have a mintscan, default to ping.pub (index 0)
         explorerToUse = list(possibleExplorers.keys())[0]
 
-    # keplr new website changed this
-    # if explorerToUse == "keplr":
-    #     # https://wallet.keplr.app/#/gravity-bridge/governance?detailId={propid}
-    #     return f"{chainAPIs[ticker][1][explorerToUse]}{propId}"
-    # else:
-    return f"{chainAPIs[ticker][1][explorerToUse]}/{propId}"
+    url = f"{chain_info['explorers'][explorerToUse]}/{PAGES[explorerToUse]['gov_page'].replace('{id}', str(propId))}"
+    print('get_explorer_link', url)
+    return url
 
 # This is so messy, make this more OOP related
 def post_update(ticker, propID, title, description="", isDAO=False, DAOVoteLink=""):
@@ -204,10 +211,9 @@ def post_update(ticker, propID, title, description="", isDAO=False, DAOVoteLink=
     twitterAt = ""
 
     if isDAO == True:
-        if "twitter" in DAOs[ticker]:
-            twitterAt = DAOs[ticker]["twitter"]
+        twitterAt = DAOs[ticker]["twitter"]
     else:
-        twitterAt = chainAPIs[ticker][2] # @'s blockchains official twitter
+        twitterAt = get_chain(ticker)['twitter'] # @'s blockchains official twitter
     
     if len(twitterAt) > 1:
         twitterAt = f'@{twitterAt}' if not twitterAt.startswith('@') else twitterAt
@@ -235,7 +241,8 @@ def getAllProposals(ticker) -> list:
     props = []
     
     try:
-        link = chainAPIs[ticker][0]
+        # link = chainAPIs[ticker][0]
+        link = get_chain(ticker)['rest_root'] + "/" + REST_ENDPOINTS['proposals']
         response = requests.get(link, headers={
             'accept': 'application/json', 
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'}, 
@@ -335,7 +342,7 @@ def logRun():
 
 def runChecks():   
     print("Running checks...") 
-    for chain in chainAPIs.keys():
+    for chain in CHAIN_APIS.keys():
         try:
             if  len(TICKERS_TO_ANNOUNCE) > 0 and chain not in TICKERS_TO_ANNOUNCE:
                 continue
