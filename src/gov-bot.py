@@ -23,8 +23,7 @@ import tweepy
 from discord import Webhook, RequestsWebhookAdapter
 
 # from _ChainApis import chainAPIs, customExplorerLinks, DAOs
-
-from cosmpy_api import get_chain, CHAIN_APIS, CUSTOM_EXPLORER_LINKS, PAGES, DAOs, REST_ENDPOINTS # get_dao?
+from pyibc_api import get_chain, CHAIN_APIS, CUSTOM_EXPLORER_LINKS, PAGES, DAOs, REST_ENDPOINTS # get_dao?
 
 # == Configuration ==
 
