@@ -30,7 +30,10 @@ cp secrets.example.json secrets.json
 #2) If you want to allow all tickers to be announced, leave TICKERS_TO_ANNOUNCE as `[]`
 # *To specify tickers, add them in a list as `["dig","osmo","huahua"]` matching tickers in the cosmpy_chain CHAIN_APIs*
 
-#3) run 'python src/gov-bot.py'
+
+#3) python3 -m pip install -r requirements/requirements.txt
+
+#4) run 'python src/gov-bot.py'
 
 # if you want to run every 30 minutes, here is that crontab example:
 # */30 * * * * cd /root/cosmos-governance-bot && python src/gov-bot.py
