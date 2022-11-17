@@ -1,12 +1,12 @@
 ## INSTALL
-# pip install -r requirements.txt
+# pip install -r requirements.txt --update
 
 ## UPDATE DEENDS
 # pip install pipreqs && pipreqs .
+
 discord.py==1.7.3
 requests==2.27.1
 schedule==1.1.0
 tweepy==4.5.0
-# cosmpy-api
-python-ibc
+python-ibc>=0.2.0a2
 discord_webhook

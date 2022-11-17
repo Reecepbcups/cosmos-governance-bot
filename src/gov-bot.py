@@ -13,19 +13,28 @@ python3 -m pip install requests tweepy schedule discord
 
 import json
 import os
+import time
+
 import requests
 import schedule
-import time
 import tweepy
 
-# from _ChainApis import chainAPIs, customExplorerLinks, DAOs
-from pyibc_api import get_chain, CHAIN_APIS, CUSTOM_EXPLORER_LINKS, PAGES, DAOs, REST_ENDPOINTS # get_dao?
+from pyibc_api import (CHAIN_APIS, CUSTOM_EXPLORER_LINKS, PAGES,  # get_dao?
+                       REST_ENDPOINTS, DAOs, get_chain, ChainInfo, DAOInfo)
+
+from utils.notifications import discord_notification
+
+from utils.fileutil import load_proposals_from_file, save_proposals, update_proposal_value
+
+from utils.discordutils import (get_max_archive_length, discord_create_thread, 
+                                get_last_msg_id, discord_post_to_channel, discord_add_reacts)
 
 # Don't touch below --------------------------------------------------
 proposals = {}
 DISCORD_API = "https://discord.com/api/v9"
 IS_FIRST_RUN = False
-BOOSTED_DISCORD_THREAD_TIME_TIERS = {0: 1440,1: 4320,2: 10080,3: 10080}
+BOOSTED_DISCORD_THREAD_TIME_TIERS = {0: 1440, 1: 4320, 2: 10080, 3: 10080}
+MAX_ARCHIVE_MINUTES = 1440
 
 if not os.path.isfile("secrets.json"):
     print("\nsecrets.json not found, please create it like so:")
@@ -53,7 +62,7 @@ with open('secrets.json', 'r') as f:
     TICKERS_TO_IGNORE = secrets.get('TICKERS_TO_IGNORE', [])
     # print(f"Ignoring: {TICKERS_TO_IGNORE}")
 
-    filename = secrets['FILENAME']
+    filename = "chains.json"
     filename_dao = 'chains_dao.json'
     
     # print(f"\nOS ENV: {os.environ}")
@@ -88,97 +97,6 @@ with open('secrets.json', 'r') as f:
                 "authorization": "Bot " + BOT_TOKEN,    
             }
 
-# Loads normal proposals (ticker -> id) dict
-def load_proposals_from_file() -> dict:
-    global proposals
-    with open(filename, 'r') as f:
-        proposals = json.load(f)       
-    return proposals
-def save_proposals() -> None:
-    if len(proposals) > 0:
-        with open(filename, 'w') as f:
-            json.dump(proposals, f)
-def update_proposal_value(ticker: str, newPropNumber: int):
-    global proposals
-    proposals[ticker] = newPropNumber
-    save_proposals()
-#
-
-def _SetMaxArchiveDurationLength() -> int:
-    global THREAD_ARCHIVE_MINUTES
-
-    if DISCORD_THREADS_AND_REACTIONS == False:
-        return 0
-
-    # Archive lengths are 1 or 24 hours for level 0 boosted servers, 3 days for level 1, and 7 days for level 2
-    # Returns max time user
-    v = requests.get(f"{DISCORD_API}/guilds/{GUILD_ID}", headers=BOT_TOKEN_HEADERS_FOR_API).json()    
-    # print(v)
-    
-    if 'message' in v.keys() and v['message'] == '401: Unauthorized':
-        print("Discord API Error: 401 Unauthorized. Please ensure you have the correct BOT_TOKEN set in secrets.json")
-        exit()
-
-    guildBoostLevel = int(v['premium_tier'])
-    max_len = BOOSTED_DISCORD_THREAD_TIME_TIERS[guildBoostLevel]
-    
-    if THREAD_ARCHIVE_MINUTES not in [60, 1440, 4320, 10080]:
-        THREAD_ARCHIVE_MINUTES = max_len
-        print(f"\nInvalid thread archive length: {THREAD_ARCHIVE_MINUTES}")
-        print(f"Using {max_len} minutes. Other options: [60, 1440, 4320, 10080]")
-    elif THREAD_ARCHIVE_MINUTES > max_len:
-        THREAD_ARCHIVE_MINUTES = max_len
-        print(f"\nWARNING: THREAD_ARCHIVE_MINUTES is greater than the max archive length for this server. Setting to {max_len}")
-        print(f"You need a higher boost level to use 4320 & 100080 sadly :(")
-
-    return max_len
-
-def discord_create_thread(message_id, thread_name):
-    global DO_ARCHIVE_THREADS
-    data = { # https://discord.com/developers/docs/resources/channel#allowed-mentions-object-json-params-thread
-        "name": thread_name,
-        "archived": DO_ARCHIVE_THREADS,
-        "auto_archive_duration": THREAD_ARCHIVE_MINUTES, # set via _SetMaxArchiveDurationLength on main() based on server boost level
-        "locked": False,
-        "invitable": False,
-        "rate_limit_per_user": 5,
-    }
-    # print(data)
-    # https://discord.com/developers/docs/topics/gateway#thread-create
-    return requests.post(f"{DISCORD_API}/channels/{CHANNEL_ID}/messages/{message_id}/threads", json=data, headers=BOT_TOKEN_HEADERS_FOR_API).json()    
-
-def _getLastMessageID():
-    # gets last message from channel that the webhook just sent too. This way we can make thread from it without bot running all the time
-    # https://discord.com/developers/docs/resources/channel#get-channel-messages
-    res = requests.get(f"{DISCORD_API}/channels/{CHANNEL_ID}/messages?limit=1", headers=BOT_TOKEN_HEADERS_FOR_API).json()
-    # print(res)
-    return res[0]['id']
-
-from utils.notifications import discord_notification
-
-def discord_post_to_channel(ticker, propID, title, description, voteLink):
-    # Auto replace description's <br> & \n ?
-    if len(description) > 4096:
-        description = description[:4090] + "....."
-
-    discord_notification(
-        url=WEBHOOK_URL,
-        title=f"${str(ticker).upper()} #{propID} | {title}", 
-        description=description,
-        color=HEX_COLOR,
-        values={"vote": [voteLink, False]},
-        imageLink=AVATAR_URL,                      
-    )
-
-def discord_add_reacts(message_id): # needs READ_MESSAGE_HISTORY & ADD_REACTIONS
-    # https://discord.com/developers/docs/resources/channel#create-reaction
-    # https://discord.com/developers/docs/resources/emoji    
-    for emoji in ["✅", "❌", "⭕", "🚫"]:
-        # print("PUT request for emoji: " + emoji) # DEBUGGING
-        r = requests.put(f"{DISCORD_API}/channels/{CHANNEL_ID}/messages/{message_id}/reactions/{emoji}/@me", headers=BOT_TOKEN_HEADERS_FOR_API)
-        if r.text != "":
-            print(r.text)
-        time.sleep(REACTION_RATE_LIMIT) # rate limit
 
 def get_explorer_link(ticker, propId):
     if USE_CUSTOM_LINKS and ticker in CUSTOM_EXPLORER_LINKS:
@@ -186,13 +104,17 @@ def get_explorer_link(ticker, propId):
 
     # pingpub, mintscan, keplr
     # possibleExplorers = chainAPIs[ticker][1]
+    chain_info: ChainInfo
     chain_info = get_chain(ticker)
-    possibleExplorers = chain_info['explorers']
+    possibleExplorers = chain_info.explorers
 
     explorerToUse = explorer
-    if explorerToUse not in possibleExplorers: # If it doesn't have a mintscan, default to ping.pub (index 0)
+    if explorerToUse not in possibleExplorers.keys(): # If it doesn't have a mintscan, default to ping.pub (index 0)
+        # TODO: Default to ping pub, then mintscan, then what ever else
+        # may have to add keplr endpoints to cosmos directory for the pages.
         explorerToUse = list(possibleExplorers.keys())[0]
 
+    # TODO: may not have these, need to write more for given explorers.
     url = f"{chain_info['explorers'][explorerToUse]}/{PAGES[explorerToUse]['gov_page'].replace('{id}', str(propId))}"
     # print('get_explorer_link', url)
     return url
@@ -222,11 +144,21 @@ def post_update(ticker, propID, title, description="", isDAO=False, DAOVoteLink=
                 tweet = api.update_status(message)
                 print(f"Tweet sent for {tweet.id}: {message}")
             if DISCORD:
-                discord_post_to_channel(ticker, propID, title, description, chainExploreLink)
+                discord_post_to_channel(ticker, propID, title, description, chainExploreLink, WEBHOOK_URL, HEX_COLOR, AVATAR_URL)
                 if DISCORD_THREADS_AND_REACTIONS:
                     # Threads must be enabled for reacts bc bot token
-                    discord_add_reacts(_getLastMessageID())
-                    discord_create_thread(_getLastMessageID(), f"{ticker}-{propID}") 
+                    last_msg_id = get_last_msg_id(DISCORD_API, CHANNEL_ID, BOT_TOKEN_HEADERS_FOR_API)
+
+                    discord_add_reacts(last_msg_id, CHANNEL_ID, BOT_TOKEN_HEADERS_FOR_API, REACTION_RATE_LIMIT)
+                    discord_create_thread(
+                        last_msg_id, 
+                        f"{ticker}-{propID}", 
+                        DO_ARCHIVE_THREADS, 
+                        MAX_ARCHIVE_MINUTES,
+                        DISCORD_API,
+                        CHANNEL_ID, 
+                        BOT_TOKEN_HEADERS_FOR_API
+                    ) 
                     pass
         except Exception as err:
             print("Tweet failed due to being duplicate OR " + str(err)) 
@@ -234,11 +166,12 @@ def post_update(ticker, propID, title, description="", isDAO=False, DAOVoteLink=
     
 def getAllProposals(ticker) -> list:
     # Makes request to API & gets JSON reply in form of a list
-    props = []
-    
+    props = []    
     try:
-        # link = chainAPIs[ticker][0]
-        link = get_chain(ticker)['rest_root'] + "/" + REST_ENDPOINTS['proposals']
+        # link = chainAPIs[ticker][0]        
+        info = get_chain(ticker)
+        link = info.rest_root + "/" + REST_ENDPOINTS['proposals']
+
         response = requests.get(link, headers={
             'accept': 'application/json', 
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'}, 
@@ -250,10 +183,17 @@ def getAllProposals(ticker) -> list:
     return props
 
 def checkIfNewerDAOProposalIsOut(daoTicker):
+    global proposals
+
     print(f"Checking if new DAO proposal is out for {daoTicker}")
     # https://rest-juno.ecostake.com/cosmwasm/wasm/v1/contract/juno1eqfqxc2ff6ywf8t278ls3h3rdk7urmawyrthagl6dyac29r7c5vqtu0zlf/smart/eyJsaXN0X3Byb3Bvc2FscyI6e319?encoding=base64
-    token = DAOs[daoTicker]
-    props = requests.get(f"{token['proposals']}").json()['data']['proposals']
+    token: DAOInfo
+    token = DAOs.get(daoTicker, None)
+    if token == None:
+        print(f"DAO {daoTicker} not found")
+        return        
+    
+    props = requests.get(f"{token.proposals}").json()['data']['proposals']
 
     for prop in props:
         current_prop_id = int(prop['id'])
@@ -281,24 +221,26 @@ def checkIfNewerDAOProposalIsOut(daoTicker):
         if IS_FIRST_RUN == False: # we only write DAO proposals to discord / twitter when its not the first run or it would spam ALL proposals on start
             # print(f"Proposal {current_prop_id} exists")
             # Announce it as live
-            # title = f"{token['name']} Proposal #{current_prop_id}"
+            # title = f"{token.name} Proposal #{current_prop_id}"
             post_update(
                 ticker=daoTicker,
                 propID=current_prop_id, 
                 title=proposal_title, 
                 description=f"from {proposer}", # for discord embeds
                 isDAO=True,
-                DAOVoteLink=f"{token['vote']}/{current_prop_id}" # https://www.rawdao.zone/vote/#
+                DAOVoteLink=f"{token.vote}/{current_prop_id}" # https://www.rawdao.zone/vote/#
             )
 
         if IS_FIRST_RUN or IN_PRODUCTION:      
             # save to proposals dict & to file (so we don't post again), unless its the first run                                 
-            update_proposal_value(daoTicker, current_prop_id)
+            proposals = update_proposal_value(daoTicker, current_prop_id, proposals)
         else:
             print("DAO: Not in production, not writing to file.")
 
 
 def checkIfNewestProposalIDIsGreaterThanLastTweet(ticker):
+    global proposals
+
     # get our last tweeted proposal ID (that was in voting period), if it exists
     # if not, 0 is the value so we search through all proposals
     lastPropID = 0
@@ -320,7 +262,7 @@ def checkIfNewestProposalIDIsGreaterThanLastTweet(ticker):
             
             if IS_FIRST_RUN or IN_PRODUCTION:      
                 # save to proposals dict & to file (so we don't post again), unless its the first run                                 
-                update_proposal_value(ticker, current_prop_id)
+                proposals = update_proposal_value(ticker, current_prop_id, proposals)
             else:
                 print("Not in production, not writing to file.")
 
@@ -340,7 +282,7 @@ def runChecks():
     print("Running checks...") 
     for chain in CHAIN_APIS.keys():
         try:
-            if  len(TICKERS_TO_ANNOUNCE) > 0 and chain not in TICKERS_TO_ANNOUNCE:
+            if len(TICKERS_TO_ANNOUNCE) > 0 and chain not in TICKERS_TO_ANNOUNCE:
                 continue
             if len(TICKERS_TO_IGNORE) > 0 and chain in TICKERS_TO_IGNORE:
                 # print(f"Ignoring {chain} as it is in the ignore list.")
@@ -379,15 +321,22 @@ def updateChainsToNewestProposalsIfThisIsTheFirstTimeRunning():
         
     print("Updating chains to newest values since you have not run this before, these will not be posted")
     runChecks()
-    save_proposals()
+    save_proposals(filename=filename, proposals=proposals)
     print("Run this again now, chains have been populated")
     exit(0)
 
 if __name__ == "__main__":        
     updateChainsToNewestProposalsIfThisIsTheFirstTimeRunning()
 
-    load_proposals_from_file()    
-    _SetMaxArchiveDurationLength()
+    proposals = load_proposals_from_file(filename=filename)    
+    MAX_ARCHIVE_MINUTES = get_max_archive_length(
+        DISCORD_API, 
+        GUILD_ID, 
+        BOT_TOKEN_HEADERS_FOR_API, 
+        DISCORD_THREADS_AND_REACTIONS, 
+        THREAD_ARCHIVE_MINUTES, 
+        BOOSTED_DISCORD_THREAD_TIME_TIERS
+    )
 
     # informs user & setups of length of time between runs
     if IN_PRODUCTION:        
