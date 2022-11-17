@@ -1,4 +1,7 @@
 # CosmosGovernanceProposalBot
+
+NOTE: get keys from secret via <https://github.com/cosmos/chain-registry> & find their symbol (ex: OSMO or AKT)
+
 A twitter + discord webhook bot to notify users of governance proposals when in voting period<br/>
 Support delevelopment with delegations to <b><u>[pbcups ($DIG)](https://ping.pub/dig/staking/digvaloper1ms3k4d9j7rzpzmq3d4jg4j4kffldfnq66wxdpj)</u></b><br/>
 
