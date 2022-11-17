@@ -116,12 +116,12 @@ def get_explorer_link(ticker, propId):
         key: str
         explorerToUse = list(possibleExplorers.keys())[0] # gets a random key
         for key in possibleExplorers.keys():
-            if 'ping' in key.lower(): # ping.pub, ping-pub
-                explorerToUse = key
-                break
-            elif 'mintscan' in key.lower():
+            if 'mintscan' in key.lower():
                 explorerToUse = key
                 break            
+            elif 'ping' in key.lower(): # ping.pub, ping-pub
+                explorerToUse = key
+                break
             elif 'keplr' in key.lower():
                 explorerToUse = key
                 break            
