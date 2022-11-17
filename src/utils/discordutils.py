@@ -1,6 +1,6 @@
 import requests, time
 
-from ..utils.notifications import discord_notification
+from utils.notifications import discord_notification
 
 def get_max_archive_length(DISCORD_API, GUILD_ID, BOT_TOKEN_HEADERS_FOR_API, DISCORD_THREADS_AND_REACTIONS, THREAD_ARCHIVE_MINUTES, BOOSTED_DISCORD_THREAD_TIME_TIERS: dict) -> int:    
     if DISCORD_THREADS_AND_REACTIONS == False:

@@ -6,10 +6,10 @@ Reece Williams (Reecepbcups | PBCUPS Validator) | February 9th, 2022
 - (Mar 8) Discord webhook to post proposals 
 - (Mar 12) Discord Threads to allow for discussion of new proposals 
 
-python3 -m pip install requests tweepy schedule discord
-
-*Get REST lcd's in chain.json from https://github.com/cosmos/chain-registry
+python3 -m pip install requests tweepy schedule discord --upgrade
 '''
+
+# TODO: may have to add keplr endpoints to cosmos directory for the pages.
 
 import json
 import os
@@ -49,7 +49,7 @@ with open('secrets.json', 'r') as f:
     TWITTER = secrets['TWITTER']['ENABLED']
     DISCORD = secrets['DISCORD']['ENABLED']
     DISCORD_THREADS_AND_REACTIONS = secrets['DISCORD_THREADS']['ENABLE_THREADS_AND_REACTIONS']
-    explorer = secrets['EXPLORER_DEFAULT'] # ping, mintscan, keplr
+    EXPLORER_DEFAULT = secrets['EXPLORER_DEFAULT'] # ping, mintscan, keplr
     USE_CUSTOM_LINKS = secrets['USE_CUSTOM_LINKS']
 
     # If false, it is up to you to schedule via crontab -e such as: */30 * * * * cd /root/twitterGovBot && python3 twitterGovernanceBot.py
@@ -102,21 +102,31 @@ def get_explorer_link(ticker, propId):
     if USE_CUSTOM_LINKS and ticker in CUSTOM_EXPLORER_LINKS:
         return f"{CUSTOM_EXPLORER_LINKS[ticker]}/{PAGES[ticker]['gov_page'].replace('{id}', str(propId))}"
 
-    # pingpub, mintscan, keplr
-    # possibleExplorers = chainAPIs[ticker][1]
+    # pingpub, mintscan, keplr, etc. 
     chain_info: ChainInfo
     chain_info = get_chain(ticker)
-    possibleExplorers = chain_info.explorers
+    possibleExplorers = chain_info.explorers 
+    # {'EZStaking Tools': 'https://ezstaking.tools/osmosis', 'mintscan': 'https://www.mintscan.io/osmosis', 
+    # 'ping.pub': 'https://ping.pub/osmosis', 'explorers.guru': 'https://osmosis.explorers.guru', 
+    # 'atomscan': 'https://atomscan.com/osmosis'}        
 
-    explorerToUse = explorer
-    if explorerToUse not in possibleExplorers.keys(): # If it doesn't have a mintscan, default to ping.pub (index 0)
-        # TODO: Default to ping pub, then mintscan, then what ever else
-        # may have to add keplr endpoints to cosmos directory for the pages.
-        explorerToUse = list(possibleExplorers.keys())[0]
-
-    # TODO: may not have these, need to write more for given explorers.
-    url = f"{chain_info['explorers'][explorerToUse]}/{PAGES[explorerToUse]['gov_page'].replace('{id}', str(propId))}"
-    # print('get_explorer_link', url)
+    explorerToUse = str(EXPLORER_DEFAULT) # keplr by default
+    if explorerToUse not in list(possibleExplorers.keys()): # If it doesn't have a mintscan, default to another one. If none, get first
+        # TODO: may have to add keplr endpoints to cosmos directory for the pages.
+        key: str
+        explorerToUse = list(possibleExplorers.keys())[0] # gets a random key
+        for key in possibleExplorers.keys():
+            if 'ping' in key.lower(): # ping.pub, ping-pub
+                explorerToUse = key
+                break
+            elif 'mintscan' in key.lower():
+                explorerToUse = key
+                break            
+            elif 'keplr' in key.lower():
+                explorerToUse = key
+                break            
+        
+    url = f"{chain_info.explorers[explorerToUse]}/{PAGES[explorerToUse]['gov_page']}".replace('{id}', str(propId))    
     return url
 
 # This is so messy, make this more OOP related
@@ -129,9 +139,9 @@ def post_update(ticker, propID, title, description="", isDAO=False, DAOVoteLink=
     twitterAt = ""
 
     if isDAO == True:
-        twitterAt = DAOs[ticker]["twitter"]
-    else:
-        twitterAt = get_chain(ticker)['twitter'] # @'s blockchains official twitter
+        twitterAt = DAOs[ticker].twitter
+    else:        
+        twitterAt = get_chain(ticker).twitter # @'s blockchains official twitter
     
     if len(twitterAt) > 1:
         twitterAt = f'@{twitterAt}' if not twitterAt.startswith('@') else twitterAt
@@ -258,7 +268,7 @@ def checkIfNewestProposalIDIsGreaterThanLastTweet(ticker):
 
         # If this is a new proposal which is not the last one we tweeted for
         if current_prop_id > lastPropID:   
-            print(f"Newest prop ID {current_prop_id} > last prop ID: {lastPropID}")
+            print(f"[{ticker}] Newest prop ID {current_prop_id} > last prop ID: {lastPropID}")
             
             if IS_FIRST_RUN or IN_PRODUCTION:      
                 # save to proposals dict & to file (so we don't post again), unless its the first run                                 
@@ -280,7 +290,7 @@ def logRun():
 
 def runChecks():   
     print("Running checks...") 
-    for chain in CHAIN_APIS.keys():
+    for chain in CHAIN_APIS.keys(): # ['crbus', 'huahua', 'cheq', 'akt', 'juno', 'atom'] ... (Symbols)        
         try:
             if len(TICKERS_TO_ANNOUNCE) > 0 and chain not in TICKERS_TO_ANNOUNCE:
                 continue
@@ -294,9 +304,9 @@ def runChecks():
 
 
     # loop through DAOs
-    for dao in DAOs.keys():
+    for dao in list(DAOs.keys()): # ['rac', 'raw'] # symbols
         try:
-            if dao not in TICKERS_TO_ANNOUNCE and TICKERS_TO_ANNOUNCE != []:
+            if TICKERS_TO_ANNOUNCE != [] and dao not in TICKERS_TO_ANNOUNCE:
                 continue
             checkIfNewerDAOProposalIsOut(dao)
         except Exception as e:
@@ -368,6 +378,3 @@ if __name__ == "__main__":
             print("Running runnable then waiting...")
             schedule.run_pending()
             time.sleep(SCHEDULE_SECONDS)
-            
-
-    
