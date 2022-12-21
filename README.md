@@ -1,21 +1,17 @@
 # CosmosGovernanceProposalBot
+
+**REFACTOR IN THE WORKS FOR COSMOS DIRECTORY, SEE LATEST PR 
+but the team doesn't want to add twitter accounts to cosmos directoy :(**
+
+<hr/>
+
 A twitter + discord webhook bot to notify users of governance proposals when in voting period<br/>
-Support delevelopment with delegations to <b><u>[pbcups ($DIG)](https://ping.pub/dig/staking/digvaloper1ms3k4d9j7rzpzmq3d4jg4j4kffldfnq66wxdpj)</u></b><br/>
 
 Twitter: [@CosmosGovNotifs](https://twitter.com/CosmosGovNotifs) <br />
 <img src="https://user-images.githubusercontent.com/31943163/160246645-a4a58384-ec9a-4019-bba8-88af6016e0d7.png" alt="twitter" width="450"/>
 
 Discord Notifications: [ChandraStation Discord](https://discord.gg/2GwEehcTa4) <br />
 <img src="https://user-images.githubusercontent.com/31943163/163013332-1180caac-eea0-4f22-bfb2-bc3db298294a.png" alt="discord" width="550"/>
-
-
-# Current Notifications for:
-## Major
-ATOM, OSMO, JUNO, AKT, SECRET, TERRA, HUAHUA, STARS, CMDX, CRO, EVMOS, GRAVITY, INJ, IRIS, LUM, REGEN 
-
-## Nicher
-DIG, DVPN, KAVA, LIKE, XPRT, BCNA, BITSONG, BOSTROM, CHEQD, PB, SIF, UMEE, Starname (iov), Band, FetchAI
-
 
 # Configuration
 ```bash
