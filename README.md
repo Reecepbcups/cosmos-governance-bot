@@ -1,4 +1,9 @@
-# CosmosGovernanceProposalBot
+# Cosmos Governance Bot
+
+## Install Guide
+https://envy-cosmos.neocities.org/post/deploying-a-discord-governance-bot/
+
+---
 
 **REFACTOR IN THE WORKS FOR COSMOS DIRECTORY, SEE LATEST PR 
 but the team doesn't want to add twitter accounts to cosmos directoy :(**
